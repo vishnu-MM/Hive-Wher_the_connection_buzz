@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/user/**
+#        - id: admin-service
+#          uri: lb://ADMIN-SERVICE
+#          predicates:
+#            - Path=/api/inventory
+#        - id: post-service
+#          uri: lb://POST-SERVICE
+#          predicates:
+#            - Path=/api/product
+  main:
+    web-application-type: reactive
+server:
+  port: 8000
