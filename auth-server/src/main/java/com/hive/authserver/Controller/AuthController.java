@@ -41,8 +41,10 @@ public class AuthController {
     }
 
     @GetMapping("/validate")
-    public String validateToken( Principal principal) {
-//        service.validateToken(token);
-        return principal.getName();
+    @ResponseStatus(HttpStatus.OK)
+    public Boolean validateToken(@RequestParam String token) {
+        Boolean result= service.validateToken(token);
+        System.out.println("returning "+result);
+        return result;
     }
 }

@@ -74,7 +74,15 @@ public class AuthService {
                 .build();
     }
 
-//    public Boolean validateToken(String token) {
-//        return jwtService.isTokenValid(token);
-//    }
+    public boolean validateToken(String token) {
+        String username = jwtService.extractUsername(token);
+        Optional<User> userOptional = dao.findByUsername(username);
+
+        if(userOptional.isEmpty())
+            throw new UsernameNotFoundException(username);
+
+        User user = userOptional.get();
+        return jwtService.isTokenValid(token, user);
+    }
+
 }
