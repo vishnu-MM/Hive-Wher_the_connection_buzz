@@ -50,6 +50,12 @@ public class User implements UserDetails {
     @Column(name = "about_me", nullable = true, length = 500)
     private String aboutMe;
 
+    @Column(name = "is_verified", nullable = false)
+    private Boolean isVerified;
+
+    @Column(name = "is_blocked", nullable = false)
+    private Boolean isBlocked;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));

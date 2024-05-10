@@ -1,16 +1,40 @@
 spring:
   application:
     name: auth-server
+
+# Database Config
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+# Mail Sender Config
+  mail:
+    properties:
+      mail:
+        host: smtp.office365.com
+        password: irwsxabwaxaurnnj
+        port: 587
+        username: hive.team2024@outlook.com
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: "*"
+
+# Eureka Client Config
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
   instance:
    hostname: localhost
+
+# Port Config
 server:
   port: 8181

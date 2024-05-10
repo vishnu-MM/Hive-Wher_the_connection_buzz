@@ -4,12 +4,11 @@ import com.hive.authserver.DTO.AuthResponse;
 import com.hive.authserver.DTO.UserSignInDTO;
 import com.hive.authserver.DTO.UserSignUpDTO;
 import com.hive.authserver.Service.AuthService;
+import com.hive.authserver.Utility.OtpVerificationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.security.Principal;
 
 @RestController
 @RequestMapping("api/auth")
@@ -23,6 +22,16 @@ public class AuthController {
             return ResponseEntity.badRequest().build();
 
         return new ResponseEntity<>( service.userRegister(newUser), HttpStatus.CREATED );
+    }
+
+    @PostMapping("send-otp")
+    public ResponseEntity<String> sentOTP(@RequestParam String username){
+        return ResponseEntity.ok(service.sendOTP(username));
+    }
+
+    @GetMapping("verify-otp")
+    public ResponseEntity<OtpVerificationStatus> validateOTP(@RequestParam String otp, @RequestParam String username){
+        return ResponseEntity.ok(service.validateOTP(otp, username));
     }
 
     @PostMapping("login")
@@ -40,11 +49,16 @@ public class AuthController {
         return new ResponseEntity<>(service.existsByUsername(username), HttpStatus.OK);
     }
 
-    @GetMapping("/validate")
+    @GetMapping("validate")
     @ResponseStatus(HttpStatus.OK)
     public Boolean validateToken(@RequestParam String token) {
         Boolean result= service.validateToken(token);
         System.out.println("returning "+result);
         return result;
+    }
+
+    @GetMapping("get-username")
+    public ResponseEntity<String> getUsername(@RequestHeader(name = "Authorization") String authorizationHeader){
+        return ResponseEntity.ok(service.getUsername(authorizationHeader));
     }
 }

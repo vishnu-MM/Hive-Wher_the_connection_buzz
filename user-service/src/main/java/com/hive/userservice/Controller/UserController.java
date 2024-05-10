@@ -1,13 +1,16 @@
 package com.hive.userservice.Controller;
 
-import com.hive.userservice.DTO.UserRequestDTO;
-import com.hive.userservice.DTO.UserResponseDTO;
-import com.hive.userservice.DTO.UserSignUpDTO;
+import com.hive.userservice.DTO.UserDTO;
+import com.hive.userservice.Exception.InvalidUserDetailsException;
+import com.hive.userservice.Exception.UserNotFoundException;
 import com.hive.userservice.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("api/user")
@@ -15,30 +18,47 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService service;
 
-    @PostMapping("register")
-    public ResponseEntity<UserResponseDTO> userRegister(@RequestBody UserSignUpDTO newUser){
-        if ( service.existsByEmail(newUser.getEmail()) ) {
-            return ResponseEntity.badRequest().build();
+    @GetMapping("profile")
+    public ResponseEntity<UserDTO> getMyProfile(@RequestHeader(name = "Authorization") String authorizationHeader) {
+        try {
+            return ResponseEntity.ok(service.getCurrentUserProfile(authorizationHeader));
         }
-        if ( service.existsByUsername(newUser.getUsername()) ) {
-            return ResponseEntity.badRequest().build();
+        catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-        return new ResponseEntity<>( service.userRegister(newUser), HttpStatus.CREATED );
+    }
+
+    @GetMapping("profile/{id}")
+    public ResponseEntity<UserDTO> getProfile(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(service.findUserById(id));
+        }
+        catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @PutMapping("update")
-    public ResponseEntity<UserResponseDTO> profileUpdate(@RequestBody UserRequestDTO user) {
-        return new ResponseEntity<>( service.profileUpdate(user), HttpStatus.CREATED );
+    public ResponseEntity<UserDTO> profileUpdate(@RequestBody UserDTO user, @RequestHeader(name = "Authorization") String authHeader) {
+        try {
+            return new ResponseEntity<>( service.profileUpdate(user,authHeader), HttpStatus.CREATED );
+        }
+        catch (UserNotFoundException | InvalidUserDetailsException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
-    @GetMapping("check-email")
-    public ResponseEntity<Boolean> isEmailExists(@RequestParam String email) {
-        return new ResponseEntity<>(service.existsByEmail(email), HttpStatus.OK);
-    }
+    @PostMapping("/upload/image")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void uploadImage(@RequestParam("image") MultipartFile file) throws IOException {
 
-    @GetMapping("check-username")
-    public ResponseEntity<Boolean> isUsernameExists(@RequestParam String username) {
-        return new ResponseEntity<>(service.existsByUsername(username), HttpStatus.OK);
+//        imageRepository.save(Image.builder()
+//                .name(file.getOriginalFilename())
+//                .type(file.getContentType())
+//                .image(ImageUtility.compressImage(file.getBytes())).build());
+//        return ResponseEntity.status(HttpStatus.OK)
+//                .body(new ImageUploadResponse("Image uploaded successfully: " +
+//                        file.getOriginalFilename()));
     }
 
     //todo : View My Profile
