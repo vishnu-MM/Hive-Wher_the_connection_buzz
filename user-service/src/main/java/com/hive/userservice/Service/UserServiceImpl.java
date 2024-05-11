@@ -1,26 +1,19 @@
 package com.hive.userservice.Service;
 
-import com.hive.userservice.DTO.ImageDTO;
-import com.hive.userservice.DTO.UserDTO;
-import com.hive.userservice.Entity.Image;
-import com.hive.userservice.Entity.User;
-import com.hive.userservice.Exception.InvalidUserDetailsException;
-import com.hive.userservice.Exception.UserNotFoundException;
-import com.hive.userservice.Repository.ImageDAO;
-import com.hive.userservice.Repository.UserDAO;
-import com.hive.userservice.Utility.ImageType;
+import com.hive.userservice.DTO.*;
+import com.hive.userservice.Entity.*;
+import com.hive.userservice.Exception.*;
+import com.hive.userservice.Repository.*;
+import com.hive.userservice.Utility.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.Optional;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
@@ -29,32 +22,25 @@ public class UserServiceImpl implements UserService {
     private final ImageDAO imageDao;
     private final RestTemplate restTemplate;
 
-
     @Override
     public UserDTO findUserByUsername(String username) throws UserNotFoundException {
-        Optional<User> userOptional = userDao.findByUsername(username);
-        if (userOptional.isEmpty()) {
-            throw new UserNotFoundException("[findUserByUsername] User with Username: "+username);
-        }
-        return entityToDTO(userOptional.get());
+        return userDao.findByUsername(username)
+                .map(this::entityToDTO)
+                .orElseThrow(() -> new UserNotFoundException("[findUserByUsername] User with Username: "+username));
     }
 
     @Override
     public UserDTO findUserByEmail(String email) throws UserNotFoundException {
-        Optional<User> userOptional = userDao.findByEmail(email);
-        if (userOptional.isEmpty()) {
-            throw new UserNotFoundException("[findUserByEmail] User with Email: "+email);
-        }
-        return entityToDTO(userOptional.get());
+        return userDao.findByEmail(email)
+                .map(this::entityToDTO)
+                .orElseThrow(() -> new UserNotFoundException("[findUserByEmail] User with Email: "+email));
     }
 
     @Override
     public UserDTO findUserById(Long id) throws UserNotFoundException {
-        Optional<User> userOptional = userDao.findById(id);
-        if (userOptional.isEmpty()) {
-            throw new UserNotFoundException("[findUserById] User with userID: "+id);
-        }
-        return entityToDTO(userOptional.get());
+        return userDao.findById(id)
+                .map(this::entityToDTO)
+                .orElseThrow(() -> new UserNotFoundException("[findUserById] User with userID: "+id));
     }
 
     @Override
@@ -77,31 +63,6 @@ public class UserServiceImpl implements UserService {
         String username = restTemplate.exchange(url, HttpMethod.GET, entity, String.class).getBody();
 
         return findUserByUsername(username);
-    }
-
-    @Override
-    public ImageDTO getProfileImageByUser(Long userId, ImageType imageType) throws UserNotFoundException {
-        Optional<User> userOptional = userDao.findById(userId);
-        if (userOptional.isEmpty()) {
-            throw new UserNotFoundException("[getProfileImageByUser] User with userID: "+userId);
-        }
-        return null;
-    }
-
-    @Override
-    public ImageDTO getProfileImage(Long imageId) {
-        return null;
-    }
-
-
-    @Override
-    public ImageDTO saveProfileImage(Long userId, ImageType imageType) {
-        return null;
-    }
-
-    @Override
-    public void deleteProfileImage(Long imageId) {
-
     }
 
     private UserDTO entityToDTO(User user) {
@@ -135,7 +96,59 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-    private ImageDTO entityToDTO(Image image) {
+// USER SERVICE METHODS ENDS HERE
+// IMAGE SERVICES METHODS STARTS HERE
+
+    @Override
+    @Transactional
+    public ImageDTO saveImage(MultipartFile file, ImageType imageType, String authHeader)
+    throws UserNotFoundException, IOException {
+
+        User user = dtoTOEntity( getCurrentUserProfile(authHeader) );
+        Image image = Image.builder()
+                .name(file.getOriginalFilename())
+                .type(file.getContentType())
+                .image(ImageUtil.compressImage(file.getBytes()))
+                .imageType(imageType)
+                .user(user)
+                .build();
+        imageDao.findByUserAndImageType(user, imageType)
+                .ifPresent(value -> image.setId( value.getId() ));
+        return entityToDTO(imageDao.save(image));
+    }
+
+    @Override
+    @Transactional
+    public ImageDTO getImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException {
+        User user = userDao.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException("[getImageByUserAndImageType] User with userID: " + userId));
+
+        return imageDao.findByUserAndImageType(user, imageType)
+                .map(this::entityToDTO)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @Override
+    @Transactional
+    public ImageDTO getImageByImageId(Long imageId) {
+        return imageDao.findById(imageId)
+                .map(this::entityToDTO)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @Override
+    public Boolean existsImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException {
+        User user = userDao.findById(userId)
+                    .orElseThrow(() -> new UserNotFoundException("[getImageByUserAndImageType] User with userID: " + userId));
+        return imageDao.existsByUserAndImageType(user, imageType);
+    }
+
+    @Override
+    public Boolean existsImageByImageId(Long imageId) {
+        return imageDao.existsById(imageId);
+    }
+
+     private ImageDTO entityToDTO(Image image) {
         return ImageDTO.builder()
                 .id(image.getId())
                 .name(image.getName())
@@ -147,12 +160,9 @@ public class UserServiceImpl implements UserService {
     }
 
     private Image dtoTOEntity(ImageDTO imageDTO) throws UserNotFoundException {
-        Optional<User> userOptional = userDao.findById(imageDTO.getId());
+        User user = userDao.findById(imageDTO.getUserID())
+                .orElseThrow(() -> new UserNotFoundException("[Image dtoTOEntity(ImageDTO)] User with userID: " + imageDTO.getUserID()));
 
-        if (userOptional.isEmpty()) 
-            throw new UserNotFoundException("[Image dtoTOEntity(ImageDTO imageDTO)] User with userID: "+ imageDTO.getUserID());
-
-        User user = userOptional.get();
         return Image.builder()
                 .id(imageDTO.getId())
                 .name(imageDTO.getName())

@@ -1,9 +1,12 @@
 package com.hive.userservice.Controller;
 
+import com.hive.userservice.DTO.ImageDTO;
 import com.hive.userservice.DTO.UserDTO;
+import com.hive.userservice.Entity.Image;
 import com.hive.userservice.Exception.InvalidUserDetailsException;
 import com.hive.userservice.Exception.UserNotFoundException;
 import com.hive.userservice.Service.UserService;
+import com.hive.userservice.Utility.ImageType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,18 +51,31 @@ public class UserController {
         }
     }
 
-    @PostMapping("/upload/image")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void uploadImage(@RequestParam("image") MultipartFile file) throws IOException {
-
-//        imageRepository.save(Image.builder()
-//                .name(file.getOriginalFilename())
-//                .type(file.getContentType())
-//                .image(ImageUtility.compressImage(file.getBytes())).build());
-//        return ResponseEntity.status(HttpStatus.OK)
-//                .body(new ImageUploadResponse("Image uploaded successfully: " +
-//                        file.getOriginalFilename()));
+    @PostMapping("upload/image")
+    public ResponseEntity<ImageDTO> uploadImage(@RequestParam("image") MultipartFile file,
+                                              @RequestParam("type") ImageType imageType,
+                                              @RequestHeader(name = "Authorization") String authHeader) {
+        try {
+            return ResponseEntity.ok(service.saveImage(file, imageType, authHeader));
+        }
+        catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
+
+    @GetMapping("image")
+    public ResponseEntity<ImageDTO> getProfileImage(@RequestParam("userID") Long userId,
+                                                    @RequestParam("type") ImageType imageType) {
+        try {
+            return ResponseEntity.ok(service.getImageByUserAndImageType(userId, imageType));
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
 
     //todo : View My Profile
     //todo : Edit My Profile

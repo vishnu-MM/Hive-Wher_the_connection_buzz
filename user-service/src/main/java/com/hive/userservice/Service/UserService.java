@@ -5,6 +5,9 @@ import com.hive.userservice.DTO.UserDTO;
 import com.hive.userservice.Exception.InvalidUserDetailsException;
 import com.hive.userservice.Exception.UserNotFoundException;
 import com.hive.userservice.Utility.ImageType;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 public interface UserService {
     //* User
@@ -14,8 +17,9 @@ public interface UserService {
     UserDTO profileUpdate(UserDTO user, String authHeader) throws UserNotFoundException, InvalidUserDetailsException;
     UserDTO getCurrentUserProfile(String authorizationHeader) throws UserNotFoundException;
     //* Image
-    ImageDTO getProfileImageByUser(Long userId, ImageType imageType) throws UserNotFoundException;
-    ImageDTO getProfileImage(Long imageId);
-    ImageDTO saveProfileImage(Long userId, ImageType imageType);
-    void deleteProfileImage(Long imageId);
+    ImageDTO saveImage(MultipartFile file, ImageType imageType, String authHeader) throws UserNotFoundException, IOException;
+    ImageDTO getImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException;
+    ImageDTO getImageByImageId(Long imageId);
+    Boolean existsImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException;
+    Boolean existsImageByImageId(Long imageId);
 }
