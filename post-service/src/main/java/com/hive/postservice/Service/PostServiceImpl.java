@@ -40,6 +40,9 @@ public class PostServiceImpl implements PostService{
     @Override
     @Transactional
     public PostDTO createPost(MultipartFile file, PostRequestDTO postRequestDTO) {
+        if ( !isValidUserId(postRequestDTO.getUserId()) ) {
+            throw new RuntimeException("Invalid user id" + postRequestDTO.getUserId());
+        }
         try {
             //? Saving File to File System
             String filePath = FOLDER_PATH + file.getOriginalFilename();
