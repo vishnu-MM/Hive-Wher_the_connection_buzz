@@ -9,6 +9,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
 server:
   port: 8081
 eureka:
@@ -17,3 +22,5 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
   instance:
     hostname: localhost
+
+FOLDER.PATH: "C:/Users/vishn/Projects/Hive-Second Project/user-service/src/main/resources/static/files/"

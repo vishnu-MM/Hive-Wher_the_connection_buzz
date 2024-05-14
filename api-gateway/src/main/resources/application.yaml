@@ -4,6 +4,11 @@ spring:
   cloud:
     gateway:
       routes:
+        - id: auth-server
+          uri: lb://AUTH-SERVER
+          predicates:
+            - Path=/api/auth/**
+
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:
@@ -11,14 +16,12 @@ spring:
           filters:
             - AuthenticationFilter
 
-        - id: auth-server
-          uri: lb://AUTH-SERVER
+        - id: post-service
+          uri: lb://POST-SERVICE
           predicates:
-            - Path=/api/auth/**
-#        - id: post-service
-#          uri: lb://POST-SERVICE
-#          predicates:
-#            - Path=/api/product
+            - Path=/api/post/**
+          filters:
+            - AuthenticationFilter
   main:
     web-application-type: reactive
 server:

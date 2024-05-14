@@ -16,6 +16,7 @@ public interface UserService {
     UserDTO findUserById(Long id) throws UserNotFoundException;
     UserDTO profileUpdate(UserDTO user, String authHeader) throws UserNotFoundException, InvalidUserDetailsException;
     UserDTO getCurrentUserProfile(String authorizationHeader) throws UserNotFoundException;
+    Boolean existsUserById(Long id);
     //* Image
     ImageDTO saveImage(MultipartFile file, ImageType imageType, String authHeader) throws UserNotFoundException, IOException;
     ImageDTO getImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException;

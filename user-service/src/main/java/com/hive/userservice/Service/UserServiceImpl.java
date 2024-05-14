@@ -65,6 +65,11 @@ public class UserServiceImpl implements UserService {
         return findUserByUsername(username);
     }
 
+    @Override
+    public Boolean existsUserById(Long id) {
+        return userDao.existsById(id);
+    }
+
     private UserDTO entityToDTO(User user) {
         return UserDTO.builder()
                 .id(user.getId()) //1

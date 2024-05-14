@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import java.sql.Timestamp;
 
 @Entity
 @Table
@@ -32,6 +33,9 @@ public class Post {
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    @Column(name = "created_on", nullable = false)
+    private Timestamp createdOn;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "post_type", nullable = false)

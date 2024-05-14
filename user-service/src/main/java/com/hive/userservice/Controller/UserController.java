@@ -76,6 +76,11 @@ public class UserController {
         }
     }
 
+    @GetMapping("exists-profile/{id}")
+    public ResponseEntity<Boolean> isUserExists(@PathVariable Long id){
+        return ResponseEntity.ok(service.existsUserById(id));
+    }
+
 
     //todo : View My Profile
     //todo : Edit My Profile
