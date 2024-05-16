@@ -9,6 +9,13 @@ spring:
           predicates:
             - Path=/api/auth/**
 
+        - id: admin-service
+          uri: lb://ADMIN-SERVICE
+          predicates:
+            - Path=/api/admin/**
+          filters:
+            - AuthenticationFilter
+
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:

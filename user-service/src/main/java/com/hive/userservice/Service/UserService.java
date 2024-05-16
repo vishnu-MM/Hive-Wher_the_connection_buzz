@@ -17,6 +17,10 @@ public interface UserService {
     UserDTO profileUpdate(UserDTO user, String authHeader) throws UserNotFoundException, InvalidUserDetailsException;
     UserDTO getCurrentUserProfile(String authorizationHeader) throws UserNotFoundException;
     Boolean existsUserById(Long id);
+    void blockUser(Long id) throws UserNotFoundException;
+    void unBlockUser(Long id) throws UserNotFoundException;
+    Long getTotalUsers();
+
     //* Image
     ImageDTO saveImage(MultipartFile file, ImageType imageType, String authHeader) throws UserNotFoundException, IOException;
     ImageDTO getImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException;

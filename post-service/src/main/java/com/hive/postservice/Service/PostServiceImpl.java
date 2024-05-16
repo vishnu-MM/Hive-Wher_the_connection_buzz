@@ -1,9 +1,6 @@
 package com.hive.postservice.Service;
 
-import com.hive.postservice.DTO.CommentDTO;
-import com.hive.postservice.DTO.LikeDTO;
-import com.hive.postservice.DTO.PostDTO;
-import com.hive.postservice.DTO.PostRequestDTO;
+import com.hive.postservice.DTO.*;
 import com.hive.postservice.Entity.Comment;
 import com.hive.postservice.Entity.Like;
 import com.hive.postservice.Entity.Post;
@@ -41,7 +38,7 @@ public class PostServiceImpl implements PostService{
     @Transactional
     public PostDTO createPost(MultipartFile file, PostRequestDTO postRequestDTO) {
         if ( !isValidUserId(postRequestDTO.getUserId()) ) {
-            throw new RuntimeException("Invalid user id" + postRequestDTO.getUserId());
+            throw new RuntimeException("[createPost] Invalid user id " + postRequestDTO.getUserId());
         }
         try {
             //? Saving File to File System
@@ -56,12 +53,13 @@ public class PostServiceImpl implements PostService{
                     .filePath(filePath)
                     .createdOn(Timestamp.from(Instant.now()))
                     .userId(postRequestDTO.getUserId())
+                    .isBlocked(false)
                     .postType(postRequestDTO.getPostType())
                     .build();
             return entityToDTO(postDAO.save(post));
         }
         catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("[createPost IO] " + e);
         }
     }
 
@@ -80,7 +78,7 @@ public class PostServiceImpl implements PostService{
     @Override
     public List<PostDTO> getPostsForUser(Long userId) {
         if( !isValidUserId(userId) )
-            throw new RuntimeException("Invalid user id" + userId);
+            throw new RuntimeException("[getPostsForUser] Invalid user id " + userId);
 
         return List.of(); //! INCOMPLETE
     }
@@ -101,22 +99,48 @@ public class PostServiceImpl implements PostService{
             postDAO.deleteById(postId);
         }
         else {
-            throw new RuntimeException("Post not found with id: " + postId);
+            throw new RuntimeException("[deletePost] Post not found with id: " + postId);
         }
+    }
+
+    @Override
+    public PostDTO blockPost(Long postId) {
+        Post post = getPostEntity(postId);
+        post.setIsBlocked(true);
+        return entityToDTO(postDAO.save(post));
+    }
+
+    @Override
+    public PostDTO unBlockPost(Long postId) {
+        Post post = getPostEntity(postId);
+        post.setIsBlocked(false);
+        return entityToDTO(postDAO.save(post));
+    }
+
+    @Override
+    public Long postCount() {
+        return postDAO.count();
     }
 
     //POST METHODS ENDED
     //COMMENT METHODS STARTED
 
     @Override
-    public CommentDTO createComment(CommentDTO commentDTO) {
-        if ( !isValidUserId( commentDTO.getUserId()) )
-            throw new RuntimeException("Invalid user id" + commentDTO.getUserId());
+    public CommentDTO createComment(CommentRequestDTO commentRequest) {
+        if ( !isValidUserId( commentRequest.getUserId()) )
+            throw new RuntimeException("[createComment] Invalid user id " + commentRequest.getUserId());
 
-        if ( postDAO.existsById( commentDTO.getPostId()) )
-            throw new RuntimeException("Invalid post id" + commentDTO.getPostId());
+        if ( !postDAO.existsById( commentRequest.getPostId()) )
+            throw new RuntimeException("[createComment] Invalid post id " + commentRequest.getPostId());
 
-        return entityToDTO( commentDAO.save( dtoToEntity(commentDTO)));
+        Comment comment = Comment.builder()
+                .comment(commentRequest.getComment())
+                .commentedDate(Timestamp.from(Instant.now()))
+                .userId(commentRequest.getUserId())
+                .isBlocked(false)
+                .post( getPostEntity(commentRequest.getPostId()))
+                .build();
+        return entityToDTO( commentDAO.save(comment));
     }
 
     @Override
@@ -126,7 +150,7 @@ public class PostServiceImpl implements PostService{
             commentDAO.deleteById(commentId);
         }
         else {
-            throw new RuntimeException("Comment not found with id: " + commentId);
+            throw new RuntimeException("[deleteComment] Comment not found with id: " + commentId);
         }
     }
 
@@ -144,7 +168,7 @@ public class PostServiceImpl implements PostService{
         return commentDAO
                 .findById(commentId)
                 .map(this::entityToDTO)
-                .orElseThrow(() -> new RuntimeException("Comment not found with id: " + commentId));
+                .orElseThrow(() -> new RuntimeException("[getComment] Comment not found with id: " + commentId));
     }
 
     @Override
@@ -152,23 +176,50 @@ public class PostServiceImpl implements PostService{
         return commentDAO.countAllByPost( getPostEntity(postId));
     }
 
+    @Override
+    public CommentDTO blockComment(Long commentId) {
+        Optional<Comment> commentOp = commentDAO.findById(commentId);
+        if ( commentOp.isPresent() ) {
+            Comment comment = commentOp.get();
+            comment.setIsBlocked(true);
+            return entityToDTO(commentDAO.save(comment));
+        }
+        return null;
+    }
+
+    @Override
+    public CommentDTO unBlockComment(Long commentId) {
+        Optional<Comment> commentOp = commentDAO.findById(commentId);
+        if ( commentOp.isPresent() ) {
+            Comment comment = commentOp.get();
+            comment.setIsBlocked(false);
+            return entityToDTO(commentDAO.save(comment));
+        }
+        return null;
+    }
+
     //COMMENT METHODS ENDED
     //LIKE METHODS STARTED
 
     @Override
     @Transactional
-    public LikeDTO createLike(LikeDTO likeDTO) {
-        if ( !isValidUserId(likeDTO.getUserId()) )
-            throw new RuntimeException("Invalid user id" + likeDTO.getUserId());
+    public LikeDTO createLike(LikeRequestDTO likeRequest) {
+        if ( !isValidUserId(likeRequest.getUserId()) )
+            throw new RuntimeException("[createLike] Invalid user id " + likeRequest.getUserId());
 
-        Optional<Post> post = postDAO.findById(likeDTO.getPostId());
+        Optional<Post> post = postDAO.findById(likeRequest.getPostId());
         if ( post.isEmpty() )
-            throw new RuntimeException("Invalid post id" + likeDTO.getPostId());
+            throw new RuntimeException("[createLike] Invalid post id " + likeRequest.getPostId());
 
-        if ( likeDAO.existsByPostAndUserId(post.get(), likeDTO.getUserId()) )
+        if ( likeDAO.existsByPostAndUserId(post.get(), likeRequest.getUserId()) )
             return null;
 
-        return entityToDTO( likeDAO.save( dtoToEntity(likeDTO)));
+        Like like = Like.builder()
+                .userId(likeRequest.getUserId())
+                .likedDate(Timestamp.from(Instant.now()))
+                .post( getPostEntity(likeRequest.getPostId()))
+                .build();
+        return entityToDTO( likeDAO.save(like));
     }
 
     @Override
@@ -176,7 +227,7 @@ public class PostServiceImpl implements PostService{
         return likeDAO
                 .findById(likeId)
                 .map(this::entityToDTO)
-                .orElseThrow(() -> new RuntimeException("Invalid likeId: " + likeId));
+                .orElseThrow(() -> new RuntimeException("[getLike] Invalid likeId: " + likeId));
     }
 
     @Override
@@ -194,7 +245,7 @@ public class PostServiceImpl implements PostService{
             likeDAO.deleteById(likeId);
         }
         else {
-            throw new RuntimeException("Like not found with id: " + likeId);
+            throw new RuntimeException("[deleteLike] Like not found with id: " + likeId);
         }
     }
 
@@ -208,7 +259,7 @@ public class PostServiceImpl implements PostService{
 
     public Post getPostEntity(Long postId) {
         return postDAO.findById(postId)
-                .orElseThrow(() -> new RuntimeException("Post not found with id: " + postId));
+                .orElseThrow(() -> new RuntimeException("[getPostEntity] Post not found with id: " + postId));
     }
 
     private Boolean isValidUserId(Long userId) {
@@ -224,6 +275,7 @@ public class PostServiceImpl implements PostService{
                 .filePath(post.getFilePath())
                 .createdOn(post.getCreatedOn())
                 .userId(post.getUserId())
+                .isBlocked(post.getIsBlocked())
                 .postType(post.getPostType())
                 .build();
     }
@@ -237,6 +289,7 @@ public class PostServiceImpl implements PostService{
                 .filePath(dto.getFilePath())
                 .createdOn(dto.getCreatedOn())
                 .userId(dto.getUserId())
+                .isBlocked(dto.getIsBlocked())
                 .postType(dto.getPostType())
                 .build();
     }
@@ -247,6 +300,7 @@ public class PostServiceImpl implements PostService{
                 .comment(comment.getComment())
                 .commentedDate(comment.getCommentedDate())
                 .userId(comment.getUserId())
+                .isBlocked(comment.getIsBlocked())
                 .postId(comment.getPost().getId())
                 .build();
     }
@@ -257,6 +311,7 @@ public class PostServiceImpl implements PostService{
                 .comment(dto.getComment())
                 .commentedDate(dto.getCommentedDate())
                 .userId(dto.getUserId())
+                .isBlocked(dto.getIsBlocked())
                 .post( getPostEntity(dto.getPostId()))
                 .build();
     }

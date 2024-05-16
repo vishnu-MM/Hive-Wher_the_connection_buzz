@@ -37,6 +37,9 @@ public class Post {
     @Column(name = "created_on", nullable = false)
     private Timestamp createdOn;
 
+    @Column(name = "is_blocked", nullable = false)
+    private Boolean isBlocked;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "post_type", nullable = false)
     private PostType postType;

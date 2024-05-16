@@ -70,6 +70,29 @@ public class UserServiceImpl implements UserService {
         return userDao.existsById(id);
     }
 
+    @Override
+    public void blockUser(Long id) throws UserNotFoundException {
+        User user = userDao
+                .findById(id)
+                .orElseThrow(() -> new UserNotFoundException("[findUserById] User with userID: "+id));
+        user.setIsBlocked(true);
+        userDao.save(user);
+    }
+
+    @Override
+    public void unBlockUser(Long id) throws UserNotFoundException {
+        User user = userDao
+                .findById(id)
+                .orElseThrow(() -> new UserNotFoundException("[findUserById] User with userID: "+id));
+        user.setIsBlocked(false);
+        userDao.save(user);
+    }
+
+    @Override
+    public Long getTotalUsers() {
+        return userDao.count();
+    }
+
     private UserDTO entityToDTO(User user) {
         return UserDTO.builder()
                 .id(user.getId()) //1

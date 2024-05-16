@@ -18,6 +18,7 @@ public class AuthController {
 
     @PostMapping("register")
     public ResponseEntity<AuthResponse> userRegister(@RequestBody UserSignUpDTO newUser){
+        System.out.println("Getting request for user registration " + newUser);
         if (service.existsByEmail(newUser.getEmail()) || service.existsByUsername(newUser.getUsername()))
             return ResponseEntity.badRequest().build();
 
@@ -41,11 +42,13 @@ public class AuthController {
 
     @GetMapping("check-email")
     public ResponseEntity<Boolean> isEmailExists(@RequestParam String email) {
+        System.out.println("Request is getting with email " + email);
         return new ResponseEntity<>(service.existsByEmail(email), HttpStatus.OK);
     }
 
     @GetMapping("check-username")
     public ResponseEntity<Boolean> isUsernameExists(@RequestParam String username) {
+        System.out.println("Request is getting with username " + username);
         return new ResponseEntity<>(service.existsByUsername(username), HttpStatus.OK);
     }
 

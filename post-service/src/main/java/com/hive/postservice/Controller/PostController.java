@@ -1,9 +1,6 @@
 package com.hive.postservice.Controller;
 
-import com.hive.postservice.DTO.CommentDTO;
-import com.hive.postservice.DTO.LikeDTO;
-import com.hive.postservice.DTO.PostDTO;
-import com.hive.postservice.DTO.PostRequestDTO;
+import com.hive.postservice.DTO.*;
 import com.hive.postservice.Service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -70,8 +67,8 @@ public class PostController {
     //COMMENT END-POINTS STARTS HERE
 
     @PostMapping("add-comment")
-    public ResponseEntity<CommentDTO> createComment(@RequestBody CommentDTO commentDTO){
-        return new ResponseEntity<>(service.createComment(commentDTO), HttpStatus.CREATED);
+    public ResponseEntity<CommentDTO> createComment(@RequestBody CommentRequestDTO commentRequest){
+        return new ResponseEntity<>(service.createComment(commentRequest), HttpStatus.CREATED);
     }
 
     @DeleteMapping("remove-comment")
@@ -104,7 +101,7 @@ public class PostController {
     //LIKE END-POINTS STARTS HERE
 
     @PostMapping("add-like")
-    public ResponseEntity<LikeDTO> createLike(@RequestBody LikeDTO likeDTO){
+    public ResponseEntity<LikeDTO> createLike(@RequestBody LikeRequestDTO likeDTO){
         return new ResponseEntity<>(service.createLike(likeDTO), HttpStatus.OK);
     }
 
@@ -132,5 +129,42 @@ public class PostController {
     @GetMapping("total-like")
     public ResponseEntity<Long> getLikeCount(@RequestParam("postId")  Long postId){
         return ResponseEntity.ok(service.likeCount(postId));
+    }
+
+    @GetMapping("post-count")
+    public ResponseEntity<Long> getTotalPosts(){
+        return ResponseEntity.ok(service.postCount());
+    }
+
+    @PutMapping("block-post")
+    public ResponseEntity<Void> blockPost(@RequestParam("postId") Long postId){
+        PostDTO postDTO = service.blockPost(postId);
+        if(postDTO == null)
+            return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("unblock-post")
+    public ResponseEntity<Void> unBlockPost(@RequestParam("postId") Long postId){
+        PostDTO postDTO = service.unBlockPost(postId);
+        if(postDTO == null)
+            return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("block-comment")
+    public ResponseEntity<Void> blockComment(@RequestParam("commentId") Long commentId){
+        CommentDTO commentDTO = service.blockComment(commentId);
+        if(commentDTO == null)
+            return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("unblock-comment")
+    public ResponseEntity<Void> unBlockComment(@RequestParam("commentId") Long commentId){
+        CommentDTO commentDTO = service.unBlockComment(commentId);
+        if(commentDTO == null)
+            return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok().build();
     }
 }

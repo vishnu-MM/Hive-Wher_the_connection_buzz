@@ -32,3 +32,4 @@ build/
 ### VS Code ###
 .vscode
 HiveApp-FrontEnd
+user-service/src/main/resources/static/files/

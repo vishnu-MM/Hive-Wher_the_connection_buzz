@@ -81,12 +81,29 @@ public class UserController {
         return ResponseEntity.ok(service.existsUserById(id));
     }
 
+    @GetMapping("user-count")
+    public ResponseEntity<Long> getTotalUsers(){
+        return ResponseEntity.ok(service.getTotalUsers());
+    }
 
-    //todo : View My Profile
-    //todo : Edit My Profile
-    //todo : View Others Profile
-    //todo : Sent Friend-Request
-    //todo : Accept Friend-Request
-    //todo : Report A User
-    //todo : Search
+    @PutMapping("block-user")
+    public ResponseEntity<Void> blockUser(@RequestParam("userId") Long userId){
+        try {
+            service.blockUser(userId);
+            return ResponseEntity.ok().build();
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("unblock-user")
+    public ResponseEntity<Void> unBlockUser(@RequestParam("userId") Long userId){
+        try {
+            service.unBlockUser(userId);
+            return ResponseEntity.ok().build();
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 }

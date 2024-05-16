@@ -20,5 +20,6 @@ public class PostDTO {
     private String filePath;
     private Timestamp createdOn;
     private Long userId;
+    private Boolean isBlocked;
     private PostType postType;
 }

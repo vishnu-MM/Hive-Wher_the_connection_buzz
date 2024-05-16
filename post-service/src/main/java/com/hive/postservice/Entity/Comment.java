@@ -27,6 +27,9 @@ public class Comment {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @Column(name = "is_blocked", nullable = false)
+    private Boolean isBlocked;
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "post_id", referencedColumnName = "id", nullable = false)
     private Post post;
