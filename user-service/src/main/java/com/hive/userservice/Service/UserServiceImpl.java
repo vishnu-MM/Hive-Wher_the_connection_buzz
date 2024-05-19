@@ -153,7 +153,7 @@ public class UserServiceImpl implements UserService {
 
         return imageDao.findByUserAndImageType(user, imageType)
                 .map(this::entityToDTO)
-                .orElseThrow(RuntimeException::new);
+                .orElse(null);
     }
 
     @Override

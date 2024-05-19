@@ -8,6 +8,7 @@ import com.hive.authserver.Entity.User;
 import com.hive.authserver.Repository.UserDAO;
 import com.hive.authserver.Utility.OtpVerificationStatus;
 import com.hive.authserver.Utility.Role;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -75,20 +76,24 @@ public class AuthService {
         return jwtService.isTokenValid(token, user);
     }
 
-    public String sendOTP(String username) {
-        Optional<User> userOptional = dao.findByEmail(username);
+    public String sendOTP(String email) {
+        Optional<User> userOptional = dao.findByEmail(email);
 
         if (userOptional.isEmpty())
-            throw new UsernameNotFoundException(username);
+            throw new UsernameNotFoundException(email);
 
         otpService.sendOTP(entityToDTO(userOptional.get()));
         return "OTP sent";
     }
 
+    @Transactional
     public OtpVerificationStatus validateOTP(String otp, String email) {
+        System.out.println("getting");
         OtpVerificationStatus status = otpService.verifyOTP(email, otp);
+        System.out.println("respose" + status);
         if (OtpVerificationStatus.SUCCESS.equals(status)) {
             Boolean isVerified = dao.findIsVerifiedByEmail(email);
+            System.out.println("isVerified" + isVerified);
             if (!isVerified) {
                 dao.updateIsVerifiedByEmail(true,email);
             }

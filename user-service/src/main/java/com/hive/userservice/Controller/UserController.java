@@ -8,7 +8,9 @@ import com.hive.userservice.Exception.UserNotFoundException;
 import com.hive.userservice.Service.UserService;
 import com.hive.userservice.Utility.ImageType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,11 +54,17 @@ public class UserController {
     }
 
     @PostMapping("upload/image")
-    public ResponseEntity<ImageDTO> uploadImage(@RequestParam("image") MultipartFile file,
-                                              @RequestParam("type") ImageType imageType,
-                                              @RequestHeader(name = "Authorization") String authHeader) {
+    public ResponseEntity<ImageDTO> uploadImage(  @RequestParam("image") MultipartFile file,
+                                                  @RequestParam("type") String imageType,
+                                                  @RequestHeader(name = "Authorization") String authHeader ) {
+        ImageType type;
         try {
-            return ResponseEntity.ok(service.saveImage(file, imageType, authHeader));
+            type = ImageType.valueOf(imageType.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        try {
+            return ResponseEntity.ok(service.saveImage(file, type, authHeader));
         }
         catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -70,10 +78,26 @@ public class UserController {
     public ResponseEntity<ImageDTO> getProfileImage(@RequestParam("userID") Long userId,
                                                     @RequestParam("type") ImageType imageType) {
         try {
-            return ResponseEntity.ok(service.getImageByUserAndImageType(userId, imageType));
+            ImageDTO imageDTO = service.getImageByUserAndImageType(userId, imageType);
+            if (imageDTO == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+            return ResponseEntity.ok(imageDTO);
         } catch (UserNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
+        /*
+        try {
+            byte[] imageBytes = service.getImageByUserAndImageType(userId, imageType);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_PNG);
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        */
     }
 
     @GetMapping("exists-profile/{id}")
@@ -105,5 +129,4 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         }
     }
-
 }

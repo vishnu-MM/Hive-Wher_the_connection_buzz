@@ -26,6 +26,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     public GatewayFilter apply(Config config) {
         return ((exchange, chain) -> {
 
+            System.out.println("Getting request to " +
+                                exchange.getRequest().getURI()
+                                + " And is route secured: " +
+                                routeValidator.isSecured.test(exchange.getRequest()));
+
             if ( routeValidator.isSecured.test(exchange.getRequest())) {
                  HttpHeaders header = exchange.getRequest().getHeaders();
 
@@ -45,7 +50,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                         .uri("http://localhost:8181/api/auth/validate?token=" + authHeader)
                         .retrieve()
                         .bodyToMono(Boolean.class);
-                
+
                 return responseMono.flatMap(isValid -> {
                     if (isValid != null && isValid) {
                         return chain.filter(exchange);
@@ -74,7 +79,8 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                             exchange.getResponse().setComplete();
                         });
 
-                    *//*
+                    */
+                /*
                 return responseMono.flatMap(isValid -> {
                     if (isValid != null && isValid) {
                         // Continue the filter chain

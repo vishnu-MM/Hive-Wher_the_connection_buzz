@@ -8,6 +8,8 @@ spring:
           uri: lb://AUTH-SERVER
           predicates:
             - Path=/api/auth/**
+          filters:
+            - AuthenticationFilter
 
         - id: admin-service
           uri: lb://ADMIN-SERVICE

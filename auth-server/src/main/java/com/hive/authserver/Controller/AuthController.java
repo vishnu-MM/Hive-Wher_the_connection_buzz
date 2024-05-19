@@ -26,13 +26,14 @@ public class AuthController {
     }
 
     @PostMapping("send-otp")
-    public ResponseEntity<String> sentOTP(@RequestParam String username){
-        return ResponseEntity.ok(service.sendOTP(username));
+    public ResponseEntity<String> sentOTP(@RequestParam("email") String email){
+        return ResponseEntity.ok(service.sendOTP(email));
     }
 
     @GetMapping("verify-otp")
-    public ResponseEntity<OtpVerificationStatus> validateOTP(@RequestParam String otp, @RequestParam String username){
-        return ResponseEntity.ok(service.validateOTP(otp, username));
+    public ResponseEntity<OtpVerificationStatus> validateOTP(@RequestParam("otp") String otp,
+                                                             @RequestParam("email") String email){
+        return ResponseEntity.ok(service.validateOTP(otp, email));
     }
 
     @PostMapping("login")

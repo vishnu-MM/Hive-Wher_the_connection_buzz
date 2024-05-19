@@ -15,6 +15,7 @@ public interface UserDAO extends JpaRepository<User,Long> {
     Boolean existsByUsername(String username);
     Optional<User> findByEmail(String email);
     Optional<User> findByUsername(String username);
+    @Query("SELECT u.isVerified FROM User u WHERE u.email = :email")
     Boolean findIsVerifiedByEmail(String email);
     @Modifying
     @Query("UPDATE User u SET u.isVerified = :isVerified WHERE u.email = :email")
