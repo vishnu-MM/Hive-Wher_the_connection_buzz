@@ -2,6 +2,7 @@ package com.hive.postservice.Controller;
 
 import com.hive.postservice.DTO.*;
 import com.hive.postservice.Service.PostService;
+import com.hive.postservice.Utility.PostType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,9 +19,17 @@ import java.util.List;
 public class PostController {
     private final PostService service;
 
-    @PostMapping("create")
-    public ResponseEntity<PostDTO> createPost(@RequestPart("file") MultipartFile file,
-                                              @RequestPart("post") PostRequestDTO postRequestDTO){
+    @PostMapping("/create")
+    public ResponseEntity<PostDTO> createPost(@RequestParam(name = "file") MultipartFile file,
+                                              @RequestParam("description") String description,
+                                              @RequestParam("postType") String postType,
+                                              @RequestParam("userId") Long userId){
+        PostRequestDTO postRequestDTO = PostRequestDTO
+                .builder()
+                .description(description)
+                .postType(PostType.valueOf(postType))
+                .userId(userId)
+                .build();
         return new ResponseEntity<>( service.createPost(file, postRequestDTO), HttpStatus.CREATED);
     }
 

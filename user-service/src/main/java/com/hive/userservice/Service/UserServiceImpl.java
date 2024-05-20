@@ -47,8 +47,12 @@ public class UserServiceImpl implements UserService {
     public UserDTO profileUpdate(UserDTO userDTO, String authHeader) throws UserNotFoundException, InvalidUserDetailsException {
         UserDTO currentUserDto = getCurrentUserProfile(authHeader);
 
-        if ( !currentUserDto.getUsername().equals( userDTO.getUsername() ) )
-            throw new InvalidUserDetailsException(userDTO.getUsername());
+        if ( !currentUserDto.getId().equals( userDTO.getId() ) )
+            throw new InvalidUserDetailsException(userDTO.getId().toString());
+
+        userDTO.setPassword( currentUserDto.getPassword() );
+        userDTO.setIsVerified( currentUserDto.getIsVerified() );
+        userDTO.setIsBlocked( currentUserDto.getIsBlocked() );
 
         return entityToDTO( userDao.save( dtoTOEntity(userDTO)));
     }
