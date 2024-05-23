@@ -39,7 +39,7 @@ public class OtpService {
         message.setText(generateEmailBody(recipientUsername, otp));
 
         try {
-//            javaMailSender.send(message);
+            javaMailSender.send(message);
             System.out.println("OTP "+otp);
             availableOtps.put(recipientEmail, new OtpDetails(recipientEmail, otp, System.currentTimeMillis()));
             log.info("OTP sent successfully {}", availableOtps.get(recipientEmail));

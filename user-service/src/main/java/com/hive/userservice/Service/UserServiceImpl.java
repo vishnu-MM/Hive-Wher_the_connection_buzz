@@ -7,6 +7,10 @@ import com.hive.userservice.Repository.*;
 import com.hive.userservice.Utility.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -14,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -180,7 +185,23 @@ public class UserServiceImpl implements UserService {
         return imageDao.existsById(imageId);
     }
 
-     private ImageDTO entityToDTO(Image image) {
+    @Override
+    public PaginationInfo getAllUser(Integer pageNo, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("id"));
+        Page<User> page = userDao.findUsersByRole(Role.USER,pageable);
+        List<UserDTO> contents = page.getContent().stream().map(this::entityToDTO).toList();
+        return PaginationInfo.builder()
+                .contents(contents)
+                .pageNo(page.getNumber())
+                .pageSize(page.getSize())
+                .hasNext(page.hasNext())
+                .isLast(page.isLast())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .build();
+    }
+
+    private ImageDTO entityToDTO(Image image) {
         return ImageDTO.builder()
                 .id(image.getId())
                 .name(image.getName())

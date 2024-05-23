@@ -39,7 +39,7 @@ public class AuthService {
                 .isBlocked(false)
                 .build();
         dao.save(user);
-        return new AuthResponse( jwtService.generateToken(user) );
+        return new AuthResponse( jwtService.generateToken(user), user.getId(), user.getRole() );
     }
 
     public AuthResponse authenticate(UserSignInDTO userDTO) {
@@ -54,7 +54,7 @@ public class AuthService {
 
         User user = userOptional.get();
         String token = jwtService.generateToken(user);
-        return new AuthResponse(token);
+        return new AuthResponse(token, user.getId(), user.getRole());
     }
 
     public Boolean existsByEmail(String email) {

@@ -41,10 +41,20 @@ public class PostController {
     @GetMapping("/files/{postId}")
     public ResponseEntity<byte[]> getImage(@PathVariable("postId") Long postId ) {
         try {
-            byte[] imageBytes = service.getPostFile(postId);
+            PostDTO postDTO = service.getPost(postId);
+            byte[] fileBytes = service.getPostFile(postId);
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_PNG);
-            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+            if(postDTO.getPostType() == PostType.IMAGE){
+                headers.setContentType(MediaType.IMAGE_PNG);
+            }
+            else if(postDTO.getPostType() == PostType.VIDEO){
+                headers.setContentType(MediaType.valueOf("video/mp4"));
+            }
+            else {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>(fileBytes, headers, HttpStatus.OK);
+
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -70,6 +80,13 @@ public class PostController {
         catch(Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+
+    @GetMapping("all-posts")
+    public ResponseEntity<PaginationInfo> getAllPosts(@RequestParam("pageNo") Integer pageNo,
+                                                      @RequestParam("pageSize") Integer pageSize){
+        return ResponseEntity.ok(service.getAllPosts(pageNo, pageSize));
     }
 
     //POST END-POINTS ENDED
@@ -117,6 +134,17 @@ public class PostController {
     @GetMapping("single-like")
     public ResponseEntity<LikeDTO> getLike(@RequestParam("likeId") Long likeId){
         return ResponseEntity.ok().body(service.getLike(likeId));
+    }
+
+    @GetMapping("is-liked")
+    public ResponseEntity<Boolean> isUserLiked(@RequestParam("userId") Long userId,
+                                               @RequestParam("postId") Long postId){
+        LikeRequestDTO likeRequestDTO = LikeRequestDTO
+                .builder()
+                .postId(postId)
+                .userId(userId)
+                .build();
+        return ResponseEntity.ok().body(service.isUserLiked(likeRequestDTO));
     }
 
     @GetMapping("all-like")

@@ -11,7 +11,10 @@ import com.hive.postservice.Repository.PostDAO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -19,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +46,8 @@ public class PostServiceImpl implements PostService{
         }
         try {
             //? Saving File to File System
-            String filePath = FOLDER_PATH + file.getOriginalFilename();
+            String timestamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS").format(Timestamp.from(Instant.now()));
+            String filePath = FOLDER_PATH + timestamp + "-" + file.getOriginalFilename();
             file.transferTo(new File(filePath));
 
             //? Saving Post Details Into DB
@@ -120,6 +125,23 @@ public class PostServiceImpl implements PostService{
     @Override
     public Long postCount() {
         return postDAO.count();
+    }
+
+    @Override
+    public PaginationInfo getAllPosts(Integer pageNo, Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("id"));
+        Page<Post> page = postDAO.findAll(pageable);
+        List<PostDTO> contents = page.getContent().stream().map(this::entityToDTO).toList();
+
+        return PaginationInfo.builder()
+                .contents(contents)
+                .pageNo(page.getNumber())
+                .pageSize(page.getSize())
+                .hasNext(page.hasNext())
+                .isLast(page.isLast())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .build();
     }
 
     //POST METHODS ENDED
@@ -254,6 +276,18 @@ public class PostServiceImpl implements PostService{
         return likeDAO.countByPost( getPostEntity(postId));
     }
 
+    @Override
+    public Boolean isUserLiked(LikeRequestDTO likeRequest) {
+        if ( !isValidUserId(likeRequest.getUserId()) )
+            throw new RuntimeException("[createLike] Invalid user id " + likeRequest.getUserId());
+
+        Optional<Post> post = postDAO.findById(likeRequest.getPostId());
+        if ( post.isEmpty() )
+            throw new RuntimeException("[createLike] Invalid post id " + likeRequest.getPostId());
+
+        return likeDAO.existsByPostAndUserId(post.get(), likeRequest.getUserId());
+    }
+
     //LIKE METHODS ENDED
     //HELPER METHODS STARTED
 
@@ -267,6 +301,7 @@ public class PostServiceImpl implements PostService{
     }
 
     private PostDTO entityToDTO(Post post) {
+        System.out.println(post);
         return PostDTO.builder()
                 .id(post.getId())
                 .description(post.getDescription())

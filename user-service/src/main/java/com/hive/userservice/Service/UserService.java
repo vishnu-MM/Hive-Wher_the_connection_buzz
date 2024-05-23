@@ -1,6 +1,7 @@
 package com.hive.userservice.Service;
 
 import com.hive.userservice.DTO.ImageDTO;
+import com.hive.userservice.DTO.PaginationInfo;
 import com.hive.userservice.DTO.UserDTO;
 import com.hive.userservice.Exception.InvalidUserDetailsException;
 import com.hive.userservice.Exception.UserNotFoundException;
@@ -27,4 +28,6 @@ public interface UserService {
     ImageDTO getImageByImageId(Long imageId);
     Boolean existsImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException;
     Boolean existsImageByImageId(Long imageId);
+
+    PaginationInfo getAllUser(Integer pageNo, Integer pageSize);
 }
