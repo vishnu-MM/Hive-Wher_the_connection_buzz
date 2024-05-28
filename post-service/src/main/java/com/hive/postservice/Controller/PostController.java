@@ -61,7 +61,7 @@ public class PostController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<PostDTO>> getPostsForUser(@RequestParam("postId") Long userId){
+    public ResponseEntity<List<PostDTO>> getPostsForUser(@RequestParam("userId") Long userId){
         return new ResponseEntity<>(service.getPostsForUser(userId), HttpStatus.OK);
     }
 
@@ -69,6 +69,11 @@ public class PostController {
     public ResponseEntity<List<PostDTO>> getRandomPosts(@RequestParam("pageNo") Integer pageNo,
                                                         @RequestParam("pageSize") Integer pageSize) {
         return ResponseEntity.ok( service.getRandomPosts(pageNo,pageSize) );
+    }
+
+    @GetMapping("user-posts")
+    public ResponseEntity<List<PostDTO>> getUserPosts(@RequestParam("userId") Long userId){
+        return new ResponseEntity<>(service.getUserPosts(userId), HttpStatus.OK);
     }
 
     @DeleteMapping("delete")

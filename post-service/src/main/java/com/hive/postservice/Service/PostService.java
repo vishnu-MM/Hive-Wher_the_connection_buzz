@@ -17,6 +17,7 @@ public interface PostService {
     PostDTO unBlockPost(Long postId);
     Long postCount();
     PaginationInfo getAllPosts(Integer pageNo, Integer pageSize);
+    List<PostDTO> getUserPosts(Long userId);
 
     CommentDTO createComment(CommentRequestDTO commentRequest);
     void deleteComment(Long commentId);
@@ -31,6 +32,6 @@ public interface PostService {
     List<LikeDTO> getLikesForPost(Long postId);
     void deleteLike(Long likeId);
     Long likeCount(Long postId);
-
     Boolean isUserLiked(LikeRequestDTO likeDTO);
+
 }
