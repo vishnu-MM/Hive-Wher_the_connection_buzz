@@ -153,6 +153,13 @@ public class PostServiceImpl implements PostService{
         return postDAO.findByUserId(userId).stream().map(this::entityToDTO).toList();
     }
 
+    @Override
+    public PostDTO updatePost(PostDTO postDTO) {
+        Post post = getPostEntity(postDTO.getId());
+        post.setDescription(postDTO.getDescription());
+        return entityToDTO(postDAO.save(post));
+    }
+
     //POST METHODS ENDED
     //COMMENT METHODS STARTED
 

@@ -5,7 +5,9 @@ import com.hive.chat_service.Repository.MessageDAO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -15,6 +17,7 @@ public class MessageService {
     private final ChatRoomService chatRoomService;
 
     public Message save(Message chatMessage) {
+        chatMessage.setTimestamp(Date.from(Instant.now()));
         var chatId = chatRoomService
                 .getChatRoomId(chatMessage.getSenderId(), chatMessage.getRecipientId(), true)
                 .orElseThrow();

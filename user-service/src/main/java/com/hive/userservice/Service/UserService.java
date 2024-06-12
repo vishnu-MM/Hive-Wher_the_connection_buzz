@@ -9,6 +9,7 @@ import com.hive.userservice.Utility.ImageType;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface UserService {
     //* User
@@ -21,6 +22,8 @@ public interface UserService {
     void blockUser(Long id) throws UserNotFoundException;
     void unBlockUser(Long id) throws UserNotFoundException;
     Long getTotalUsers();
+    PaginationInfo getAllUser(Integer pageNo, Integer pageSize);
+    List<UserDTO> search(String searchQuery);
 
     //* Image
     ImageDTO saveImage(MultipartFile file, ImageType imageType, String authHeader) throws UserNotFoundException, IOException;
@@ -28,6 +31,4 @@ public interface UserService {
     ImageDTO getImageByImageId(Long imageId);
     Boolean existsImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException;
     Boolean existsImageByImageId(Long imageId);
-
-    PaginationInfo getAllUser(Integer pageNo, Integer pageSize);
 }

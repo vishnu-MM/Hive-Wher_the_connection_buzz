@@ -201,6 +201,13 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Override
+    public List<UserDTO> search(String searchQuery) {
+        List<User> userList = userDao.findUsersByNameContaining(searchQuery);
+        userList.addAll(userDao.findUsersByUsernameContaining(searchQuery));
+        return userList.stream().map(this::entityToDTO).toList();
+    }
+
     private ImageDTO entityToDTO(Image image) {
         return ImageDTO.builder()
                 .id(image.getId())

@@ -1,11 +1,10 @@
 package com.hive.userservice.Controller;
 
-import com.hive.userservice.DTO.ImageDTO;
-import com.hive.userservice.DTO.PaginationInfo;
-import com.hive.userservice.DTO.UserDTO;
+import com.hive.userservice.DTO.*;
 import com.hive.userservice.Entity.Image;
 import com.hive.userservice.Exception.InvalidUserDetailsException;
 import com.hive.userservice.Exception.UserNotFoundException;
+import com.hive.userservice.Service.ComplaintsService;
 import com.hive.userservice.Service.UserService;
 import com.hive.userservice.Utility.ImageType;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService service;
+    private final ComplaintsService complaintsService;
 
     @GetMapping("profile")
     public ResponseEntity<UserDTO> getMyProfile(@RequestHeader(name = "Authorization") String authorizationHeader) {
@@ -136,5 +136,23 @@ public class UserController {
     public ResponseEntity<PaginationInfo> getAllUsers(@RequestParam("pageNo") Integer pageNo,
                                                       @RequestParam("pageSize") Integer pageSize){
         return ResponseEntity.ok(service.getAllUser(pageNo, pageSize));
+    }
+
+    @GetMapping("search")
+    public ResponseEntity<List<UserDTO>> search(@RequestParam("searchQuery") String searchQuery){
+        return ResponseEntity.ok(service.search(searchQuery));
+    }
+
+    @PostMapping("report-user")
+    public ResponseEntity<Void> saveComplaint(@RequestBody ComplaintsDTO complaintsDTO) {
+        System.out.println(complaintsDTO);
+        complaintsService.save(complaintsDTO);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("all-complaints")
+    public ResponseEntity<ComplaintsPage> getAllComplaints(@RequestParam(defaultValue = "0") Integer pageNo,
+                                                           @RequestParam(defaultValue = "10") Integer pageSize) {
+        return ResponseEntity.ok(complaintsService.findAll(pageNo, pageSize));
     }
 }

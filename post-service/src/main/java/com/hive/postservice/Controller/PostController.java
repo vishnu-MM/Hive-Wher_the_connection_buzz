@@ -94,6 +94,11 @@ public class PostController {
         return ResponseEntity.ok(service.getAllPosts(pageNo, pageSize));
     }
 
+    @PutMapping("update")
+    public ResponseEntity<PostDTO> updatePost(@RequestBody PostDTO postDTO){
+        return new ResponseEntity<>(service.updatePost(postDTO), HttpStatus.OK);
+    }
+
     //POST END-POINTS ENDED
     //COMMENT END-POINTS STARTS HERE
 
