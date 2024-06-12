@@ -3,6 +3,7 @@ package com.hive.chat_service.Service;
 import com.hive.DTO.Notification;
 import com.hive.Utility.NotificationType;
 import com.hive.chat_service.DTO.NotificationDTO;
+import com.hive.chat_service.Repository.NotificationDAO;
 import com.hive.chat_service.Utility.TypeOfNotification;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

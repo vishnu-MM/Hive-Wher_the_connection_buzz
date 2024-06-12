@@ -1,6 +1,7 @@
 package com.hive.chat_service.Controller;
 
 import com.hive.chat_service.DTO.NotificationDTO;
+import com.hive.chat_service.DTO.PaginationDTO;
 import com.hive.chat_service.Entity.Message;
 import com.hive.chat_service.Service.MessageService;
 import com.hive.chat_service.Service.NotificationService;
@@ -24,6 +25,7 @@ public class ChatController {
     private static final Logger log = LoggerFactory.getLogger(ChatController.class);
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageService messageService;
+    private final NotificationService notificationService;
 
     @MessageMapping("/chat")
     public void processMessage(@Payload Message message) {
@@ -51,5 +53,12 @@ public class ChatController {
     public ResponseEntity<List<Message>> findMessages(@RequestParam("senderId") String senderId,
                                                       @RequestParam("recipientId") String recipientId) {
         return ResponseEntity.ok(messageService.findMessages(senderId, recipientId));
+    }
+
+    @GetMapping("/notifications")
+    public ResponseEntity<PaginationDTO> findMessages(@RequestParam("userId") Long userId,
+                                                      @RequestParam("pageSize") Integer pageSize,
+                                                      @RequestParam("pageNo") Integer pageNo) {
+        return ResponseEntity.ok(notificationService.findAll(userId, pageNo, pageSize));
     }
 }

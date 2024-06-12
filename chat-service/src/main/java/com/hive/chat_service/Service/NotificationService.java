@@ -25,7 +25,7 @@ public class NotificationService {
                 .senderId(notificationDTO.getSenderId())
                 .recipientId(notificationDTO.getRecipientId())
                 .typeOfNotification(notificationDTO.getTypeOfNotification())
-                .timestamp(Instant.now())
+                .date(Date.from(Instant.now()))
                 .postId(notificationDTO.getPostId())
                 .commentId(notificationDTO.getCommentId())
                 .build();
@@ -58,7 +58,7 @@ public class NotificationService {
                 .senderId(notification.getSenderId())
                 .recipientId(notification.getRecipientId())
                 .typeOfNotification(notification.getTypeOfNotification())
-                .date(Date.from(notification.getTimestamp()))
+                .date(notification.getDate())
                 .postId(notification.getPostId())
                 .commentId(notification.getCommentId())
                 .build();

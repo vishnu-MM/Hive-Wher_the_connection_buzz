@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.time.Instant;
+import java.util.Date;
 
 @Data
 @Builder
@@ -16,7 +16,7 @@ public class Notification {
     private Long senderId;
     private Long recipientId;
     private TypeOfNotification typeOfNotification;
-    private Instant timestamp;
+    private Date date;
     @Nullable private Long postId;
     @Nullable private Long commentId;
 }
