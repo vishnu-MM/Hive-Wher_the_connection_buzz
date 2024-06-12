@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -57,7 +58,7 @@ public class NotificationService {
                 .senderId(notification.getSenderId())
                 .recipientId(notification.getRecipientId())
                 .typeOfNotification(notification.getTypeOfNotification())
-                .timestamp(notification.getTimestamp())
+                .date(Date.from(notification.getTimestamp()))
                 .postId(notification.getPostId())
                 .commentId(notification.getCommentId())
                 .build();

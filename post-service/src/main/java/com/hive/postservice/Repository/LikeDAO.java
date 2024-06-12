@@ -6,12 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LikeDAO extends JpaRepository<Like, Long> {
     Boolean existsByPostAndUserId(Post post, Long userId);
-    void deleteByPostAndUserId(Post post, Long userId);
     List<Like> findByPost(Post post);
     Long countByPost(Post post);
-
+    Optional<Like> findByPostAndUserId(Post post, Long userId);
 }

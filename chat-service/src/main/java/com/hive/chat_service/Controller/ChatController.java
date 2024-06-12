@@ -24,7 +24,6 @@ public class ChatController {
     private static final Logger log = LoggerFactory.getLogger(ChatController.class);
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageService messageService;
-    private final NotificationService notificationService;
 
     @MessageMapping("/chat")
     public void processMessage(@Payload Message message) {
@@ -37,16 +36,16 @@ public class ChatController {
         );
     }
 
-    @MessageMapping("/notification")
-    public void processNotification(@Payload NotificationDTO notificationDTO) {
-        String destination = "/queue/notification";
-        NotificationDTO notification = notificationService.save(notificationDTO);
-        messagingTemplate.convertAndSendToUser(
-                String.valueOf(notification.getRecipientId()),
-                destination,
-                notification
-        );
-    }
+//    @MessageMapping("/notification")
+//    public void processNotification(@Payload NotificationDTO notificationDTO) {
+//        String destination = "/queue/notification";
+//        NotificationDTO notification = notificationService.save(notificationDTO);
+//        messagingTemplate.convertAndSendToUser(
+//                String.valueOf(notification.getRecipientId()),
+//                destination,
+//                notification
+//        );
+//    }
 
     @GetMapping("/messages")
     public ResponseEntity<List<Message>> findMessages(@RequestParam("senderId") String senderId,

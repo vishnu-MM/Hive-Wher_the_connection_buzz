@@ -1,7 +1,7 @@
 package com.hive.postservice.Service;
 
 import com.hive.DTO.Notification;
-import com.hive.Utility.TypeOfNotification;
+import com.hive.Utility.NotificationType;
 import com.hive.postservice.DTO.*;
 import com.hive.postservice.Entity.Comment;
 import com.hive.postservice.Entity.Like;
@@ -233,7 +233,7 @@ public class PostServiceImpl implements PostService{
     //LIKE METHODS STARTED
 
     @Override
-    @Transactional
+//    @Transactional
     public LikeDTO createLike(LikeRequestDTO likeRequest) {
         if ( !isValidUserId(likeRequest.getUserId()) )
             throw new RuntimeException("[createLike] Invalid user id " + likeRequest.getUserId());
@@ -255,8 +255,7 @@ public class PostServiceImpl implements PostService{
         Notification notification = new Notification();
         notification.setSenderId( like.getUserId());
         notification.setRecipientId( post.get().getUserId() );
-        notification.setTypeOfNotification( TypeOfNotification.LIKE );
-        notification.setTimestamp( Instant.now() );
+        notification.setNotificationType( NotificationType.LIKE );
         notification.setPostId( post.get().getId() );
 
         mqService.sendMessageToTopic("like-notification", notification);
@@ -284,8 +283,10 @@ public class PostServiceImpl implements PostService{
     @Transactional
     public void deleteLike(LikeRequestDTO like) {
         Post post = getPostEntity(like.getPostId());
-        if (likeDAO.existsByPostAndUserId(post, like.getUserId()) ) {
-            likeDAO.deleteByPostAndUserId(post, like.getUserId());
+        Optional<Like> likeOptional = likeDAO.findByPostAndUserId(post, like.getUserId());
+        if (likeOptional.isPresent()) {
+            Like entity = likeOptional.get();
+            likeDAO.delete(entity);
         }
         else {
             throw new RuntimeException("[deleteLike] Like not found with : " + like);

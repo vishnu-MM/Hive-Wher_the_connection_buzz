@@ -24,7 +24,7 @@ public class Like {
     @Column(name = "liked_date", nullable = false)
     private Timestamp likedDate;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "post_id", referencedColumnName = "id", nullable = false)
     private Post post;
 }
