@@ -1,5 +1,7 @@
 package com.hive.postservice.Service;
 
+import com.hive.DTO.Notification;
+import com.hive.Utility.TypeOfNotification;
 import com.hive.postservice.DTO.*;
 import com.hive.postservice.Entity.Comment;
 import com.hive.postservice.Entity.Like;
@@ -17,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -36,6 +37,7 @@ public class PostServiceImpl implements PostService{
     private final CommentDAO commentDAO;
     private final LikeDAO likeDAO;
     private final UserInterface userInterface;
+    private final MessageQueueService mqService;
 
 
     @Override
@@ -50,7 +52,7 @@ public class PostServiceImpl implements PostService{
             String filePath = FOLDER_PATH + timestamp + "-" + file.getOriginalFilename();
             file.transferTo(new File(filePath));
 
-            //? Saving Post Details Into DB
+            //? Saving Post Details Into DBf
             Post post = Post.builder()
                     .description(postRequestDTO.getDescription())
                     .fileName(file.getOriginalFilename())
@@ -246,9 +248,19 @@ public class PostServiceImpl implements PostService{
         Like like = Like.builder()
                 .userId(likeRequest.getUserId())
                 .likedDate(Timestamp.from(Instant.now()))
-                .post( getPostEntity(likeRequest.getPostId()))
+                .post(post.get())
                 .build();
-        return entityToDTO( likeDAO.save(like));
+        like = likeDAO.save(like);
+
+        Notification notification = new Notification();
+        notification.setSenderId( like.getUserId());
+        notification.setRecipientId( post.get().getUserId() );
+        notification.setTypeOfNotification( TypeOfNotification.LIKE );
+        notification.setTimestamp( Instant.now() );
+        notification.setPostId( post.get().getId() );
+
+        mqService.sendMessageToTopic("like-notification", notification);
+        return entityToDTO(like);
     }
 
     @Override
@@ -269,12 +281,14 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public void deleteLike(Long likeId) {
-        if ( likeDAO.existsById(likeId) ) {
-            likeDAO.deleteById(likeId);
+    @Transactional
+    public void deleteLike(LikeRequestDTO like) {
+        Post post = getPostEntity(like.getPostId());
+        if (likeDAO.existsByPostAndUserId(post, like.getUserId()) ) {
+            likeDAO.deleteByPostAndUserId(post, like.getUserId());
         }
         else {
-            throw new RuntimeException("[deleteLike] Like not found with id: " + likeId);
+            throw new RuntimeException("[deleteLike] Like not found with : " + like);
         }
     }
 

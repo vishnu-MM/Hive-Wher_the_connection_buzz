@@ -1,5 +1,13 @@
 server:
   port: 8083
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
+
 spring:
   application:
     name: chat-service
@@ -11,3 +19,4 @@ spring:
       port: 27017
       database: ${DB_NAME}
       authentication-database: admin
+#      DB_HOST=localhost;DB_NAME=hive_chat;DB_USER=hive;DB_PASSWORD=hive;

@@ -10,6 +10,8 @@ import java.util.List;
 @Repository
 public interface LikeDAO extends JpaRepository<Like, Long> {
     Boolean existsByPostAndUserId(Post post, Long userId);
+    void deleteByPostAndUserId(Post post, Long userId);
     List<Like> findByPost(Post post);
     Long countByPost(Post post);
+
 }

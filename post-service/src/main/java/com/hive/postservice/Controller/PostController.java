@@ -158,12 +158,13 @@ public class PostController {
     }
 
     @DeleteMapping("remove-like")
-    public ResponseEntity<Void> deleteLike(@RequestParam("likeId") Long likeId){
+    public ResponseEntity<Void> deleteLike(@RequestBody LikeRequestDTO like){
         try{
-            service.deleteLike(likeId);
+            service.deleteLike(like);
             return ResponseEntity.status(HttpStatus.OK).build();
         }
         catch(Exception e){
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

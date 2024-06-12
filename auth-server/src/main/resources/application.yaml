@@ -6,12 +6,12 @@ spring:
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://${DB_HOST}:5432/${DB_NAME}
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
-
+# DB_HOST=localhost;DB_NAME=hive_user;DB_USER=postgres;DB_PASSWORD=2248;
 # Mail Sender Config
   mail:
     properties:

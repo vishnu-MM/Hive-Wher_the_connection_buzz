@@ -1,8 +1,9 @@
 package com.hive.chat_service.Controller;
 
-import com.hive.chat_service.DTO.MessageDTO;
+import com.hive.chat_service.DTO.NotificationDTO;
 import com.hive.chat_service.Entity.Message;
 import com.hive.chat_service.Service.MessageService;
+import com.hive.chat_service.Service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,14 +24,27 @@ public class ChatController {
     private static final Logger log = LoggerFactory.getLogger(ChatController.class);
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageService messageService;
+    private final NotificationService notificationService;
 
     @MessageMapping("/chat")
     public void processMessage(@Payload Message message) {
-        log.info(message.toString());
+        String destination = "/queue/messages";
         Message savedMsg = messageService.save(message);
         messagingTemplate.convertAndSendToUser(
-                message.getRecipientId(), "/queue/messages",
-                message
+                savedMsg.getRecipientId(),
+                destination,
+                savedMsg
+        );
+    }
+
+    @MessageMapping("/notification")
+    public void processNotification(@Payload NotificationDTO notificationDTO) {
+        String destination = "/queue/notification";
+        NotificationDTO notification = notificationService.save(notificationDTO);
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(notification.getRecipientId()),
+                destination,
+                notification
         );
     }
 

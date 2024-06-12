@@ -30,7 +30,7 @@ public interface PostService {
     LikeDTO createLike(LikeRequestDTO likeRequest);
     LikeDTO getLike(Long likeId);
     List<LikeDTO> getLikesForPost(Long postId);
-    void deleteLike(Long likeId);
+    void deleteLike(LikeRequestDTO likeId);
     Long likeCount(Long postId);
     Boolean isUserLiked(LikeRequestDTO likeDTO);
 
