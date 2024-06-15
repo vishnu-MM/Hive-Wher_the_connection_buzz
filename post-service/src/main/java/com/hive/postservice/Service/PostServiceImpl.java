@@ -62,6 +62,7 @@ public class PostServiceImpl implements PostService{
                     .userId(postRequestDTO.getUserId())
                     .isBlocked(false)
                     .postType(postRequestDTO.getPostType())
+                    .aspectRatio(postRequestDTO.getAspectRatio())
                     .build();
             return entityToDTO(postDAO.save(post));
         }
@@ -168,7 +169,8 @@ public class PostServiceImpl implements PostService{
         if ( !isValidUserId( commentRequest.getUserId()) )
             throw new RuntimeException("[createComment] Invalid user id " + commentRequest.getUserId());
 
-        if ( !postDAO.existsById( commentRequest.getPostId()) )
+        Optional<Post> post = postDAO.findById(commentRequest.getPostId());
+        if ( post.isEmpty() )
             throw new RuntimeException("[createComment] Invalid post id " + commentRequest.getPostId());
 
         Comment comment = Comment.builder()
@@ -176,9 +178,19 @@ public class PostServiceImpl implements PostService{
                 .commentedDate(Timestamp.from(Instant.now()))
                 .userId(commentRequest.getUserId())
                 .isBlocked(false)
-                .post( getPostEntity(commentRequest.getPostId()))
+                .post( post.get() )
                 .build();
-        return entityToDTO( commentDAO.save(comment));
+        comment = commentDAO.save(comment);
+
+        Notification notification = new Notification();
+        notification.setSenderId( comment.getUserId() );
+        notification.setRecipientId( post.get().getUserId() );
+        notification.setNotificationType( NotificationType.COMMENT );
+        notification.setPostId( post.get().getId() );
+        notification.setCommentId( comment.getId() );
+        mqService.sendMessageToTopic("notification", notification);
+
+        return entityToDTO(comment);
     }
 
     @Override
@@ -265,7 +277,7 @@ public class PostServiceImpl implements PostService{
         notification.setNotificationType( NotificationType.LIKE );
         notification.setPostId( post.get().getId() );
 
-        mqService.sendMessageToTopic("like-notification", notification);
+        mqService.sendMessageToTopic("notification", notification);
         return entityToDTO(like);
     }
 
@@ -330,7 +342,6 @@ public class PostServiceImpl implements PostService{
     }
 
     private PostDTO entityToDTO(Post post) {
-        System.out.println(post);
         return PostDTO.builder()
                 .id(post.getId())
                 .description(post.getDescription())
@@ -341,6 +352,7 @@ public class PostServiceImpl implements PostService{
                 .userId(post.getUserId())
                 .isBlocked(post.getIsBlocked())
                 .postType(post.getPostType())
+                .aspectRatio(post.getAspectRatio())
                 .build();
     }
 
@@ -355,6 +367,7 @@ public class PostServiceImpl implements PostService{
                 .userId(dto.getUserId())
                 .isBlocked(dto.getIsBlocked())
                 .postType(dto.getPostType())
+                .aspectRatio(dto.getAspectRatio())
                 .build();
     }
 

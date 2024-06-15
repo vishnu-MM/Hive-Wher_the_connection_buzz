@@ -24,4 +24,4 @@ eureka:
 server:
   port: 8081
 
-FOLDER.PATH: "C:/Users/vishn/Projects/Hive-Second Project/user-service/src/main/resources/static/files/"
+FOLDER.PATH: "C:/Users/vishn/Projects/Hive-Second Project/post-service/src/main/resources/static/post-files/"

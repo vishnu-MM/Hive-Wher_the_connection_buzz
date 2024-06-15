@@ -17,7 +17,7 @@ public class MessageQueueConfig {
 
     @Bean
     public NewTopic createTopic() {
-        return new NewTopic("like-notification", 3, (short) 1);
+        return new NewTopic("notification", 3, (short) 1);
     }
 
     @Bean

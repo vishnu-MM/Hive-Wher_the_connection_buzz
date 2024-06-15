@@ -203,8 +203,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> search(String searchQuery) {
-        List<User> userList = userDao.findUsersByNameContaining(searchQuery);
-        userList.addAll(userDao.findUsersByUsernameContaining(searchQuery));
+        List<User> userList = userDao.findUsersByUsernameContainingAndRole(searchQuery, Role.USER);
+        userList.addAll(userDao.findUsersByNameContainingAndRole(searchQuery, Role.USER));
         return userList.stream().map(this::entityToDTO).toList();
     }
 

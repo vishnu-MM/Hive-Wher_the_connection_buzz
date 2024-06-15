@@ -18,6 +18,7 @@ public class PostDTO {
     private String fileName;
     private String fileType;
     private String filePath;
+    private Double aspectRatio;
     private Timestamp createdOn;
     private Long userId;
     private Boolean isBlocked;

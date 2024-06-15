@@ -22,7 +22,7 @@ public class MessageQueueService {
     private final NotificationService notificationService;
     private final SimpMessagingTemplate messagingTemplate;
 
-    @KafkaListener(topics = "like-notification", groupId = "notification-service")
+    @KafkaListener(topics = "notification", groupId = "notification-service")
     public void consumeEvents(Notification message) {
         log.info("Consumer consumed the events: {}", message.toString());
 

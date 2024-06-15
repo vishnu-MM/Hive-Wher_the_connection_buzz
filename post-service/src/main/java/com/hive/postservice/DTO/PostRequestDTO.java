@@ -14,4 +14,5 @@ public class PostRequestDTO {
     private String description;
     private Long userId;
     private PostType postType;
+    private Double aspectRatio;
 }

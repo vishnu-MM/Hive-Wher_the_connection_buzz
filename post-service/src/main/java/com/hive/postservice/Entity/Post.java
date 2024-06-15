@@ -31,6 +31,9 @@ public class Post {
     @Column(name = "file_path")
     private String filePath;
 
+    @Column(name = "aspect_ratio")
+    private Double aspectRatio;
+
     @Column(name = "user_id", nullable = false)
     private Long userId;
 

@@ -23,13 +23,16 @@ public class PostController {
     public ResponseEntity<PostDTO> createPost(@RequestParam(name = "file") MultipartFile file,
                                               @RequestParam("description") String description,
                                               @RequestParam("postType") String postType,
+                                              @RequestParam("aspectRatio") Double aspectRatio,
                                               @RequestParam("userId") Long userId){
         PostRequestDTO postRequestDTO = PostRequestDTO
                 .builder()
                 .description(description)
                 .postType(PostType.valueOf(postType))
                 .userId(userId)
+                .aspectRatio(aspectRatio)
                 .build();
+        System.out.println(postRequestDTO);
         return new ResponseEntity<>( service.createPost(file, postRequestDTO), HttpStatus.CREATED);
     }
 

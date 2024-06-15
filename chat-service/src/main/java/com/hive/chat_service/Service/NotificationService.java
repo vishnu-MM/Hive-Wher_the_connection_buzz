@@ -33,7 +33,7 @@ public class NotificationService {
     }
 
     public PaginationDTO findAll(Long userId, Integer pageNo, Integer pageSize) {
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("timestamp").descending());
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("id").descending());
         Page<Notification> page = dao.findAllByRecipientId(userId, pageable);
 
         List<NotificationDTO> contents = page

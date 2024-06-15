@@ -2,14 +2,11 @@ package com.hive.userservice.Service;
 
 import com.hive.userservice.DTO.ComplaintsDTO;
 import com.hive.userservice.DTO.ComplaintsPage;
-import com.hive.userservice.DTO.PaginationInfo;
-import com.hive.userservice.DTO.UserDTO;
 import com.hive.userservice.Entity.Complaints;
 import com.hive.userservice.Entity.User;
 import com.hive.userservice.Exception.UserNotFoundException;
 import com.hive.userservice.Repository.ComplaintsDAO;
 import com.hive.userservice.Repository.UserDAO;
-import com.hive.userservice.Utility.Role;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
