@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.DateTimeException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("api/user")
@@ -155,4 +158,32 @@ public class UserController {
                                                            @RequestParam(defaultValue = "10") Integer pageSize) {
         return ResponseEntity.ok(complaintsService.findAll(pageNo, pageSize));
     }
+
+    @GetMapping("/user-count-date")
+    public ResponseEntity<Map<String, Integer>> getCountByDate(@RequestParam("filterBy") String filterBy) {
+        LocalDate endDate = LocalDate.now();
+        switch (filterBy) {
+            case "MONTH" -> {
+                LocalDate startDate = endDate.minusDays(endDate.getDayOfMonth() - 1);
+                if (startDate.isAfter(endDate))
+                    throw new DateTimeException("Invalid Start and Ending date");
+                return ResponseEntity.ok(service.getOrderCountByMonth(startDate, endDate));
+            }
+            case "YEAR" -> {
+                LocalDate startDate = LocalDate.parse(endDate.getYear() + "-01-01");
+                if (startDate.isAfter(endDate))
+                    throw new DateTimeException("Invalid Start and Ending date");
+                return ResponseEntity.ok(service.getOrderCountByYear(startDate, endDate));
+            }
+            case "WEEK" -> {
+                LocalDate startDate = endDate.minusDays(endDate.getDayOfWeek().getValue());
+                if (startDate.isAfter(endDate))
+                    throw new DateTimeException("Invalid Start and Ending date");
+                return ResponseEntity.ok(service.getOrderCountByWeek(startDate, endDate));
+
+            }
+            default -> throw new RuntimeException();
+        }
+    }
+
 }

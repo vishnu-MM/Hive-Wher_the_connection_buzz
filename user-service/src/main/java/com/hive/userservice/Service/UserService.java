@@ -9,7 +9,9 @@ import com.hive.userservice.Utility.ImageType;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     //* User
@@ -31,4 +33,10 @@ public interface UserService {
     ImageDTO getImageByImageId(Long imageId);
     Boolean existsImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException;
     Boolean existsImageByImageId(Long imageId);
+
+    Map<String, Integer> getOrderCountByMonth(LocalDate startDate, LocalDate endDate);
+
+    Map<String, Integer> getOrderCountByWeek(LocalDate startDate, LocalDate endDate);
+
+    Map<String, Integer> getOrderCountByYear(LocalDate startDate, LocalDate endDate);
 }

@@ -18,7 +18,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -206,6 +210,48 @@ public class UserServiceImpl implements UserService {
         List<User> userList = userDao.findUsersByUsernameContainingAndRole(searchQuery, Role.USER);
         userList.addAll(userDao.findUsersByNameContainingAndRole(searchQuery, Role.USER));
         return userList.stream().map(this::entityToDTO).toList();
+    }
+
+    @Override
+    public Map<String, Integer> getOrderCountByMonth(LocalDate startDate, LocalDate endDate) {
+        Map<String, Integer> dateCountMap = new HashMap<>(31);
+        LocalDate current = startDate;
+        while (!current.isAfter(endDate)) {
+            dateCountMap.put(
+                    String.valueOf(current.getDayOfMonth()), userDao.countAllByJoinDate(Date.valueOf(current))
+            );
+            System.out.println(String.valueOf(current.getDayOfMonth())+" " +dateCountMap.get(String.valueOf(current)));
+            current = current.plusDays(1);
+        }
+        return dateCountMap;
+    }
+
+    @Override
+    public Map<String, Integer> getOrderCountByWeek(LocalDate startDate, LocalDate endDate) {
+        Map<String, Integer> dateCountMap = new HashMap<>(31);
+        LocalDate current = startDate;
+        while (!current.isAfter(endDate)) {
+            dateCountMap.put(
+                    String.valueOf(current.getDayOfWeek()), userDao.countAllByJoinDate(Date.valueOf(current))
+            );
+            System.out.println(String.valueOf(current.getDayOfWeek())+" "+ String.valueOf(current)+" " +dateCountMap.get(String.valueOf(current)));
+            current = current.plusDays(1);
+        }
+        return dateCountMap;
+    }
+
+    @Override
+    public Map<String, Integer> getOrderCountByYear(LocalDate startDate, LocalDate endDate) {
+        Map<String, Integer> dateCountMap = new HashMap<>(12);
+        LocalDate current = startDate;
+        int year = current.getYear();
+        while (current.isBefore(endDate) || current.isEqual(endDate)) {
+            dateCountMap.put(
+                    String.valueOf(current.getMonth()), userDao.countAllByDateYearAndDateMonth(year,current.getMonthValue())
+            );
+            current = current.plusMonths(1);
+        }
+        return dateCountMap;
     }
 
     private ImageDTO entityToDTO(Image image) {
