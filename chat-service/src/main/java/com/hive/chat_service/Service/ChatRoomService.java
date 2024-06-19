@@ -5,7 +5,11 @@ import com.hive.chat_service.Repository.ChatRoomDAO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -46,5 +50,26 @@ public class ChatRoomService {
         dao.save(recipientSender);
 
         return chatId;
+    }
+
+    public List<Long> getChatUsers(Long id) {
+        String userId = String.valueOf(id);
+
+        List<ChatRoom> chatRoomList = dao.findAllBySenderId(userId);
+        chatRoomList.addAll( dao.findAllByRecipientId(userId) );
+
+
+        Set<Long> userIdSet = chatRoomList.stream()
+                                .map(chatRoom -> chatRoomToUserId(chatRoom, userId))
+                                .collect(Collectors.toSet());
+        return new ArrayList<>(userIdSet);
+    }
+
+    private Long chatRoomToUserId(ChatRoom chatRoom, String userId) {
+        if (chatRoom.getSenderId().equals(userId)) {
+            return Long.parseLong(chatRoom.getRecipientId());
+        } else {
+            return Long.parseLong(chatRoom.getSenderId());
+        }
     }
 }
