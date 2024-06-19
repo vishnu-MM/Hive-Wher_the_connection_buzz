@@ -20,6 +20,16 @@ public class GroupService {
         return groupDTO;
     }
 
+    public List<GroupDTO> findAllGroupByUser(String userId) {
+        return dao.findByMembersId(userId).stream().map(this::entityToDTO).toList();
+    }
+
+    public GroupDTO findById(String groupId) {
+        return dao.findById(groupId)
+                .map(this::entityToDTO)
+                .orElseThrow(() -> new RuntimeException("Group With Id "+ groupId + " Not Fount"));
+    }
+
     private GroupDTO entityToDTO(Group group) {
         return GroupDTO.builder()
                 .id(group.getId())
@@ -42,7 +52,5 @@ public class GroupService {
                 .build();
     }
 
-    public List<GroupDTO> findAllGroupByUser(String userId) {
-        return dao.findByMembersId(userId).stream().map(this::entityToDTO).toList();
-    }
+
 }

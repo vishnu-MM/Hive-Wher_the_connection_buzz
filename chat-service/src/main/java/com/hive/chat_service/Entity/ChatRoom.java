@@ -1,5 +1,6 @@
 package com.hive.chat_service.Entity;
 
+import com.hive.chat_service.Utility.MessageType;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -13,4 +14,5 @@ public class ChatRoom {
     private String chatId;
     private String senderId;
     private String recipientId;
+    private MessageType messageType;
 }

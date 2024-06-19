@@ -1,12 +1,12 @@
 package com.hive.chat_service.Entity;
 
+import com.hive.chat_service.Utility.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -20,6 +20,6 @@ public class Message {
     private String senderId;
     private String recipientId;
     private String content;
-    private Date timestamp;
-
+    private String timestamp;
+    private MessageType messageType;
 }

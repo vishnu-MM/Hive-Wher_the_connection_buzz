@@ -8,6 +8,7 @@ import com.hive.chat_service.Service.ChatRoomService;
 import com.hive.chat_service.Service.GroupService;
 import com.hive.chat_service.Service.MessageService;
 import com.hive.chat_service.Service.NotificationService;
+import com.hive.chat_service.Utility.MessageType;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,18 +35,34 @@ public class ChatController {
     @MessageMapping("/chat")
     public void processMessage(@Payload Message message) {
         String destination = "/queue/messages";
+
         Message savedMsg = messageService.save(message);
-        messagingTemplate.convertAndSendToUser(
-                savedMsg.getRecipientId(),
-                destination,
-                savedMsg
-        );
+
+        if (savedMsg.getMessageType() == MessageType.PRIVATE) {
+            if (!Objects.equals(savedMsg.getSenderId(), savedMsg.getRecipientId())) {
+                messagingTemplate.convertAndSendToUser(
+                        savedMsg.getRecipientId(),
+                        destination,
+                        savedMsg
+                );
+            }
+        }
+        else if (savedMsg.getMessageType() == MessageType.GROUP) {
+            GroupDTO groupDTO = groupService.findById(savedMsg.getRecipientId());
+            for (String member : groupDTO.getMembersId()) {
+                if(Objects.equals(member, savedMsg.getSenderId()))
+                    continue;
+                messagingTemplate.convertAndSendToUser(member, destination, savedMsg);
+            }
+        }
     }
+
 
     @GetMapping("/messages")
     public ResponseEntity<List<Message>> findMessages(@RequestParam("senderId") String senderId,
-                                                      @RequestParam("recipientId") String recipientId) {
-        return ResponseEntity.ok(messageService.findMessages(senderId, recipientId));
+                                                      @RequestParam("recipientId") String recipientId,
+                                                      @RequestParam("messageType") MessageType messageType) {
+        return ResponseEntity.ok(messageService.findMessages(senderId, recipientId, messageType));
     }
 
     @GetMapping("/notifications")
@@ -65,7 +83,12 @@ public class ChatController {
     }
 
     @GetMapping("/groups")
-    public ResponseEntity<List<GroupDTO>> createGroup(@RequestParam("userId") String userId) {
+    public ResponseEntity<List<GroupDTO>> getGroups(@RequestParam("userId") String userId) {
         return ResponseEntity.ok(groupService.findAllGroupByUser(userId));
+    }
+
+    @GetMapping("/group")
+    public ResponseEntity<GroupDTO> getGroup(@RequestParam("groupId") String groupId) {
+        return ResponseEntity.ok(groupService.findById(groupId));
     }
 }
