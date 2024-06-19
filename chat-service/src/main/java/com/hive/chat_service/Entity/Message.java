@@ -1,5 +1,6 @@
 package com.hive.chat_service.Entity;
 
+import com.hive.chat_service.Utility.MessageFileType;
 import com.hive.chat_service.Utility.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,4 +23,5 @@ public class Message {
     private String content;
     private String timestamp;
     private MessageType messageType;
+    private MessageFileType messageFileType;
 }
