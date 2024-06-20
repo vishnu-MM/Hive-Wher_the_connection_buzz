@@ -17,6 +17,7 @@ public interface PostService {
     PostDTO unBlockPost(Long postId);
     Long postCount();
     PaginationInfo getAllPosts(Integer pageNo, Integer pageSize);
+    List<PostDTO> searchPostByDescription(String searchQuery);
     List<PostDTO> getUserPosts(Long userId);
     PostDTO updatePost(PostDTO postDTO);
 

@@ -148,6 +148,12 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
+    public List<PostDTO> searchPostByDescription(String searchQuery) {
+        List<Post> postList = postDAO.findUsersByDescriptionContaining(searchQuery);
+        return postList.stream().map(this::entityToDTO).toList();
+    }
+
+    @Override
     public List<PostDTO> getUserPosts(Long userId) {
         if( !isValidUserId(userId) )
             throw new RuntimeException("[getUserPosts] Invalid user id " + userId);

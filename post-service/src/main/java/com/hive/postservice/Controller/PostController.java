@@ -90,7 +90,6 @@ public class PostController {
         }
     }
 
-
     @GetMapping("all-posts")
     public ResponseEntity<PaginationInfo> getAllPosts(@RequestParam("pageNo") Integer pageNo,
                                                       @RequestParam("pageSize") Integer pageSize){
@@ -102,8 +101,13 @@ public class PostController {
         return new ResponseEntity<>(service.updatePost(postDTO), HttpStatus.OK);
     }
 
-    //POST END-POINTS ENDED
-    //COMMENT END-POINTS STARTS HERE
+    @GetMapping("search")
+    public ResponseEntity<List<PostDTO>> searchPostByDescription(@RequestParam("searchQuery") String searchQuery) {
+        return new ResponseEntity<>(service.searchPostByDescription(searchQuery), HttpStatus.OK);
+    }
+
+//! POST END-POINTS ENDED
+//* COMMENT END-POINTS STARTS HERE
 
     @PostMapping("add-comment")
     public ResponseEntity<CommentDTO> createComment(@RequestBody CommentRequestDTO commentRequest){
@@ -136,8 +140,8 @@ public class PostController {
         return ResponseEntity.ok(service.commentCount(postId));
     }
 
-    //COMMENT END-POINTS ENDED
-    //LIKE END-POINTS STARTS HERE
+//! COMMENT END-POINTS ENDED
+//* LIKE END-POINTS STARTS HERE
 
     @PostMapping("add-like")
     public ResponseEntity<LikeDTO> createLike(@RequestBody LikeRequestDTO likeDTO){

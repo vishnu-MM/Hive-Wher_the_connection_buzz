@@ -14,8 +14,6 @@ import java.util.Optional;
 
 @Repository
 public interface UserDAO extends JpaRepository<User,Long> {
-    Boolean existsByEmail(String email);
-    Boolean existsByUsername(String username);
     Optional<User> findByEmail(String email);
     Optional<User> findByUsername(String username);
     Page<User> findUsersByRole(Role role, Pageable pageable);
