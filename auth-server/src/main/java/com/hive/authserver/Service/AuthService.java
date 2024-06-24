@@ -1,5 +1,6 @@
 package com.hive.authserver.Service;
 
+import com.hive.authserver.CustomException.UserBlockedException;
 import com.hive.authserver.DTO.AuthResponse;
 import com.hive.authserver.DTO.UserDTO;
 import com.hive.authserver.DTO.UserSignInDTO;
@@ -37,16 +38,21 @@ public class AuthService {
                 .joinDate(date)
                 .isVerified(false)
                 .isBlocked(false)
+                .blockReason("NOT BLOCKED")
                 .build();
         dao.save(user);
-        return new AuthResponse( jwtService.generateToken(user), user.getId(), user.getRole() );
+        return new AuthResponse(
+                jwtService.generateToken(user),
+                user.getId(),
+                user.getRole(),
+                "CREATED"
+        );
     }
 
     public AuthResponse authenticate(UserSignInDTO userDTO) {
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken( userDTO.getUsername(), userDTO.getPassword() )
         );
-
         Optional<User> userOptional = dao.findByEmail(userDTO.getUsername());
 
         if(userOptional.isEmpty())
@@ -54,7 +60,13 @@ public class AuthService {
 
         User user = userOptional.get();
         String token = jwtService.generateToken(user);
-        return new AuthResponse(token, user.getId(), user.getRole());
+
+        return new AuthResponse(
+                token,
+                user.getId(),
+                user.getRole(),
+                "AUTHENTICATED"
+        );
     }
 
     public Boolean existsByEmail(String email) {
@@ -88,17 +100,25 @@ public class AuthService {
 
     @Transactional
     public OtpVerificationStatus validateOTP(String otp, String email) {
-        System.out.println("getting");
         OtpVerificationStatus status = otpService.verifyOTP(email, otp);
-        System.out.println("respose" + status);
         if (OtpVerificationStatus.SUCCESS.equals(status)) {
             Boolean isVerified = dao.findIsVerifiedByEmail(email);
-            System.out.println("isVerified" + isVerified);
             if (!isVerified) {
                 dao.updateIsVerifiedByEmail(true,email);
             }
         }
         return status;
+    }
+
+    public void isUserBlocked(UserSignInDTO userSignIn) throws UsernameNotFoundException, UserBlockedException {
+        Optional<User> userOptional = dao.findByEmail(userSignIn.getUsername());
+        if (userOptional.isEmpty())
+            throw new UsernameNotFoundException(userSignIn.getUsername());
+        User user = userOptional.get();
+        if (user.getIsBlocked()) {
+            String reason = user.getBlockReason();
+            throw new UserBlockedException(reason);
+        }
     }
 
     public String getUsername(String authorizationHeader) {
@@ -117,6 +137,8 @@ public class AuthService {
                 .name(user.getName())
                 .phone(user.getPhone())
                 .aboutMe(user.getAboutMe())
+                .blockReason(user.getBlockReason())
                 .build();
     }
+
 }

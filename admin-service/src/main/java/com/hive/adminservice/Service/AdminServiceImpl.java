@@ -22,8 +22,8 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public void blockUser(Long userId) {
-        userInterface.blockUser(userId);
+    public void blockUser(Long userId, String reason) {
+        userInterface.blockUser(userId, reason);
     }
 
     @Override

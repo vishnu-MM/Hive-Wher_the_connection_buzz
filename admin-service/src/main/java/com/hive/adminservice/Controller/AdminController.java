@@ -24,8 +24,9 @@ public class AdminController {
     
     @PutMapping("block-user")
     @ResponseStatus(HttpStatus.OK)
-    public void blockUser(@RequestParam("userId") Long userId){
-        service.blockUser(userId);
+    public void blockUser(@RequestParam("userId") Long userId,
+                          @RequestParam("reason") String reason){
+        service.blockUser(userId, reason);
     }
 
     @PutMapping("block-post")

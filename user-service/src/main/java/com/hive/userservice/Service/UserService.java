@@ -6,6 +6,7 @@ import com.hive.userservice.DTO.UserDTO;
 import com.hive.userservice.Exception.InvalidUserDetailsException;
 import com.hive.userservice.Exception.UserNotFoundException;
 import com.hive.userservice.Utility.ImageType;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -21,7 +22,7 @@ public interface UserService {
     UserDTO profileUpdate(UserDTO user, String authHeader) throws UserNotFoundException, InvalidUserDetailsException;
     UserDTO getCurrentUserProfile(String authorizationHeader) throws UserNotFoundException;
     Boolean existsUserById(Long id);
-    void blockUser(Long id) throws UserNotFoundException;
+    void blockUser(Long id, String reason) throws UserNotFoundException;
     void unBlockUser(Long id) throws UserNotFoundException;
     Long getTotalUsers();
     PaginationInfo getAllUser(Integer pageNo, Integer pageSize);

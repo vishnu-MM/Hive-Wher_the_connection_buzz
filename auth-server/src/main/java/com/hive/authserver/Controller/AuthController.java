@@ -1,19 +1,25 @@
 package com.hive.authserver.Controller;
 
+import com.hive.authserver.CustomException.UserBlockedException;
 import com.hive.authserver.DTO.AuthResponse;
 import com.hive.authserver.DTO.UserSignInDTO;
 import com.hive.authserver.DTO.UserSignUpDTO;
 import com.hive.authserver.Service.AuthService;
 import com.hive.authserver.Utility.OtpVerificationStatus;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final AuthService service;
 
     @PostMapping("register")
@@ -37,9 +43,27 @@ public class AuthController {
     }
 
     @PostMapping("login")
-    public ResponseEntity<AuthResponse> login(@RequestBody UserSignInDTO user){
-        return new ResponseEntity<>( service.authenticate(user), HttpStatus.OK );
+    public ResponseEntity<AuthResponse> login(@RequestBody UserSignInDTO user) {
+        try {
+            service.isUserBlocked(user);
+            AuthResponse authResponse = service.authenticate(user);
+            return new ResponseEntity<>(authResponse, HttpStatus.OK);
+        } catch (BadCredentialsException e) {
+            AuthResponse authResponse = new AuthResponse(null, null, null, "Invalid Password");
+            return new ResponseEntity<>(authResponse, HttpStatus.UNAUTHORIZED);
+        } catch (UsernameNotFoundException e) {
+            AuthResponse authResponse = new AuthResponse(null, null, null, "Invalid Email id");
+            return new ResponseEntity<>(authResponse, HttpStatus.NOT_FOUND);
+        } catch (UserBlockedException e) {
+            AuthResponse authResponse = new AuthResponse(null, null, null, "User is blocked. Reason : "+ e.getMessage());
+            return new ResponseEntity<>(authResponse, HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            AuthResponse authResponse = new AuthResponse(null, null, null, "Internal Server Error");
+            return new ResponseEntity<>(authResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
 
     @GetMapping("check-email")
     public ResponseEntity<Boolean> isEmailExists(@RequestParam String email) {

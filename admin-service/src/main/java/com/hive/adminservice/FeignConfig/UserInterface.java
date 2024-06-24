@@ -14,7 +14,8 @@ public interface UserInterface {
     public ResponseEntity<Long> getTotalUsers();
 
     @PutMapping("api/user/block-user")
-    public ResponseEntity<Void> blockUser(@RequestParam("userId") Long userId);
+    public ResponseEntity<Void> blockUser(@RequestParam("userId") Long userId,
+                                          @RequestParam("reason") String reason);
 
     @PutMapping("api/user/unblock-user")
     public ResponseEntity<Void> unBlockUser(@RequestParam("userId") Long userId);

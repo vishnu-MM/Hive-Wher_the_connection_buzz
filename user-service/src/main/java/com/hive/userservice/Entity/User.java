@@ -49,4 +49,7 @@ public class User {
 
     @Column(name = "is_blocked", nullable = false)
     private Boolean isBlocked; //11
+
+    @Column(name = "block_reason")
+    private String blockReason; //12
 }

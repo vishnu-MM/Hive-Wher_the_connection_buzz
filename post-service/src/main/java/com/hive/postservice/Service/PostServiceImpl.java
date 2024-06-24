@@ -149,7 +149,7 @@ public class PostServiceImpl implements PostService{
 
     @Override
     public List<PostDTO> searchPostByDescription(String searchQuery) {
-        List<Post> postList = postDAO.findUsersByDescriptionContaining(searchQuery);
+        List<Post> postList = postDAO.findUsersByDescriptionContainingIgnoreCase(searchQuery);
         return postList.stream().map(this::entityToDTO).toList();
     }
 

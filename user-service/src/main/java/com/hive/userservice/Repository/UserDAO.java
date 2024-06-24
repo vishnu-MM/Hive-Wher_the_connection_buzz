@@ -18,8 +18,9 @@ public interface UserDAO extends JpaRepository<User,Long> {
     Optional<User> findByUsername(String username);
     Page<User> findUsersByRole(Role role, Pageable pageable);
 
-    List<User> findUsersByUsernameContainingAndRole(String search, Role role);
-    List<User> findUsersByNameContainingAndRole(String search, Role role);
+    List<User> findUsersByUsernameContainingIgnoreCaseAndRole(String search, Role role);
+    List<User> findUsersByNameContainingIgnoreCaseAndRole(String search, Role role);
+    List<User> findUsersByEmailContainingIgnoreCaseAndRole(String search, Role role);
 
     Integer countAllByJoinDate(Date joinDate);
     @Query("SELECT COUNT(u) FROM User u where year(u.joinDate) = ?1 and month(u.joinDate) = ?2")

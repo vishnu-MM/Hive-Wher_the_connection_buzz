@@ -15,5 +15,5 @@ public interface PostDAO extends JpaRepository<Post, Long> {
     @Query(value = "SELECT p FROM Post p ORDER BY RANDOM()")
     List<Post> findRandomPosts(Pageable pageable);
     List<Post> findByUserId(Long userId);
-    List<Post> findUsersByDescriptionContaining(String search);
+    List<Post> findUsersByDescriptionContainingIgnoreCase(String search);
 }

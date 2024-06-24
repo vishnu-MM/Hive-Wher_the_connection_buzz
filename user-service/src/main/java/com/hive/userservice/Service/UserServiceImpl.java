@@ -15,11 +15,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,11 +86,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void blockUser(Long id) throws UserNotFoundException {
+    public void blockUser(Long id, String reason) throws UserNotFoundException {
         User user = userDao
                 .findById(id)
                 .orElseThrow(() -> new UserNotFoundException("[findUserById] User with userID: "+id));
         user.setIsBlocked(true);
+        user.setBlockReason(reason);
         userDao.save(user);
     }
 
@@ -119,6 +122,7 @@ public class UserServiceImpl implements UserService {
                 .aboutMe(user.getAboutMe()) //9
                 .isVerified(user.getIsVerified()) //10
                 .isBlocked(user.getIsBlocked()) //11
+                .blockReason(user.getBlockReason())
                 .build();
     }
     private User dtoTOEntity(UserDTO userDTO) {
@@ -134,6 +138,7 @@ public class UserServiceImpl implements UserService {
                 .aboutMe(userDTO.getAboutMe()) //9
                 .isVerified(userDTO.getIsVerified()) //10
                 .isBlocked(userDTO.getIsBlocked()) //11
+                .blockReason(userDTO.getBlockReason())
                 .build();
     }
 
@@ -207,8 +212,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> search(String searchQuery) {
-        List<User> userList = userDao.findUsersByUsernameContainingAndRole(searchQuery, Role.USER);
-        userList.addAll(userDao.findUsersByNameContainingAndRole(searchQuery, Role.USER));
+        List<User> userList = new ArrayList<>();
+        userList.addAll(userDao.findUsersByUsernameContainingIgnoreCaseAndRole(searchQuery, Role.USER));
+        userList.addAll(userDao.findUsersByNameContainingIgnoreCaseAndRole(searchQuery, Role.USER));
+        userList.addAll(userDao.findUsersByEmailContainingIgnoreCaseAndRole(searchQuery, Role.USER));
         return userList.stream().map(this::entityToDTO).toList();
     }
 

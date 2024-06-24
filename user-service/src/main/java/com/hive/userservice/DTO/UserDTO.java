@@ -1,6 +1,7 @@
 package com.hive.userservice.DTO;
 
 import com.hive.userservice.Utility.Role;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,4 +24,5 @@ public class UserDTO {
     private String aboutMe; //9
     private Boolean isVerified; //10
     private Boolean isBlocked; //11
+    private String blockReason; //12
 }

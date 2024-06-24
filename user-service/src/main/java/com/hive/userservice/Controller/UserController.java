@@ -116,9 +116,10 @@ public class UserController {
     }
 
     @PutMapping("block-user")
-    public ResponseEntity<Void> blockUser(@RequestParam("userId") Long userId){
+    public ResponseEntity<Void> blockUser(@RequestParam("userId") Long userId,
+                                          @RequestParam("reason") String reason){
         try {
-            service.blockUser(userId);
+            service.blockUser(userId, reason);
             return ResponseEntity.ok().build();
         } catch (UserNotFoundException e) {
             return ResponseEntity.badRequest().build();
