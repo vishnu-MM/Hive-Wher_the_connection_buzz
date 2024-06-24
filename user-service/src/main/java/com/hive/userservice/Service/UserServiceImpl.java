@@ -101,6 +101,7 @@ public class UserServiceImpl implements UserService {
                 .findById(id)
                 .orElseThrow(() -> new UserNotFoundException("[findUserById] User with userID: "+id));
         user.setIsBlocked(false);
+        user.setBlockReason("NOT BLOCKED");
         userDao.save(user);
     }
 
