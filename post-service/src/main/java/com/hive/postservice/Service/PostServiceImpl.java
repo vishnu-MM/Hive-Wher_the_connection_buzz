@@ -10,6 +10,9 @@ import com.hive.postservice.FeignClientConfig.UserInterface;
 import com.hive.postservice.Repository.CommentDAO;
 import com.hive.postservice.Repository.LikeDAO;
 import com.hive.postservice.Repository.PostDAO;
+import com.hive.postservice.Utility.DateFilter;
+import com.hive.postservice.Utility.PostType;
+import com.hive.postservice.Utility.PostTypeFilter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.KafkaException;
@@ -28,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -198,6 +202,72 @@ public class PostServiceImpl implements PostService{
         Post post = getPostEntity(postDTO.getId());
         post.setDescription(postDTO.getDescription());
         return entityToDTO(postDAO.save(post));
+    }
+
+    @Override
+    public PaginationInfo filter(PostFilter filter) {
+        Integer pageNo = filter.getPageNo();
+        Integer pageSize = filter.getPageSize();
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("createdOn").ascending());
+
+        if (filter.getDateFilter() == DateFilter.ALL && filter.getPostFile() != PostTypeFilter.ALL) {
+            return filterByPostTypeOnly(filter, pageable);
+        }
+        else if (filter.getDateFilter() != DateFilter.ALL && filter.getPostFile() == PostTypeFilter.ALL) {
+            return filterByDateOnly(filter, pageable);
+        }
+        else if (filter.getDateFilter() != DateFilter.ALL) {
+            return filterByPostTypeAndDate(filter, pageable);
+        }
+        else {
+            return getAllPosts(pageNo, pageSize);
+        }
+    }
+
+    private PaginationInfo filterByPostTypeOnly(PostFilter filter, Pageable pageable) {
+        PostType postType = PostType.TEXT_ONLY;
+        if (PostTypeFilter.IMAGE_BASED == filter.getPostFile()){
+            postType = PostType.IMAGE;
+        }
+        else if (PostTypeFilter.VIDEO_BASED == filter.getPostFile()){
+            postType = PostType.VIDEO;
+        }
+
+        Page<Post> page = postDAO.findByPostType(postType, pageable);
+        return pageToPaginationInfo(page);
+    }
+
+    private PaginationInfo filterByDateOnly(PostFilter filter, Pageable pageable) {
+        Timestamp startDate = new Timestamp(filter.getStartingDate().getTime());
+        Timestamp endDate = new Timestamp(filter.getEndingDate().getTime());
+
+        if (filter.getDateFilter() == DateFilter.TODAY || startDate.equals(endDate)) {
+            Page<Post> page = postDAO.findByCreatedOn(startDate, pageable);
+            return pageToPaginationInfo(page);
+        } else {
+            Page<Post> page = postDAO.findByCreatedOnBetween(startDate, endDate, pageable);
+            return pageToPaginationInfo(page);
+        }
+    }
+
+    private PaginationInfo filterByPostTypeAndDate(PostFilter filter, Pageable pageable) {
+        Timestamp startDate = new Timestamp(filter.getStartingDate().getTime());
+        Timestamp endDate = new Timestamp(filter.getEndingDate().getTime());
+        PostType postType = PostType.TEXT_ONLY;
+        if (PostTypeFilter.IMAGE_BASED == filter.getPostFile()){
+            postType = PostType.IMAGE;
+        }
+        else if (PostTypeFilter.VIDEO_BASED == filter.getPostFile()){
+            postType = PostType.VIDEO;
+        }
+
+        if (filter.getDateFilter() == DateFilter.TODAY || startDate.equals(endDate)) {
+            Page<Post> page = postDAO.findByPostTypeAndCreatedOn(postType, startDate, pageable);
+            return pageToPaginationInfo(page);
+        } else {
+            Page<Post> page = postDAO.findByPostTypeAndCreatedOnBetween(postType, startDate, endDate, pageable);
+            return pageToPaginationInfo(page);
+        }
     }
 
     //POST METHODS ENDED
@@ -465,6 +535,19 @@ public class PostServiceImpl implements PostService{
                 .userId(dto.getUserId())
                 .likedDate(dto.getLikedDate())
                 .post( getPostEntity(dto.getPostId()))
+                .build();
+    }
+
+    private PaginationInfo pageToPaginationInfo(Page<Post> page) {
+        List<PostDTO> contents = page.getContent().stream().map(this::entityToDTO).toList();
+        return PaginationInfo.builder()
+                .contents(contents)
+                .pageNo(page.getNumber())
+                .pageSize(page.getSize())
+                .hasNext(page.hasNext())
+                .isLast(page.isLast())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
                 .build();
     }
 }

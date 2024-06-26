@@ -21,6 +21,7 @@ public interface PostService {
     List<PostDTO> searchPostByDescription(String searchQuery);
     List<PostDTO> getUserPosts(Long userId);
     PostDTO updatePost(PostDTO postDTO);
+    PaginationInfo filter(PostFilter filter);
 
     CommentDTO createComment(CommentRequestDTO commentRequest);
     void deleteComment(Long commentId);

@@ -111,6 +111,11 @@ public class PostController {
         return new ResponseEntity<>(service.searchPostByDescription(searchQuery), HttpStatus.OK);
     }
 
+    @PostMapping("filter")
+    private ResponseEntity<PaginationInfo> filter(@RequestBody PostFilter filter) {
+        return ResponseEntity.ok(service.filter(filter));
+    }
+
 //! POST END-POINTS ENDED
 //* COMMENT END-POINTS STARTS HERE
 
