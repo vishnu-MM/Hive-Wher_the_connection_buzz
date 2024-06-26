@@ -12,6 +12,12 @@ import com.hive.postservice.Repository.LikeDAO;
 import com.hive.postservice.Repository.PostDAO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.common.KafkaException;
+import org.apache.kafka.common.errors.AuthenticationException;
+import org.apache.kafka.common.errors.AuthorizationException;
+import org.apache.kafka.common.errors.TimeoutException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +37,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService{
+    private static final Logger log = LoggerFactory.getLogger(PostServiceImpl.class);
     @Value("${FOLDER.PATH}")
     private String FOLDER_PATH;
     private final PostDAO postDAO;
@@ -69,6 +76,27 @@ public class PostServiceImpl implements PostService{
         catch (IOException e) {
             throw new RuntimeException("[createPost IO] " + e);
         }
+    }
+
+    @Override
+    @Transactional
+    public PostDTO createPost(PostRequestDTO postRequestDTO) {
+        if ( !isValidUserId(postRequestDTO.getUserId()) ) {
+            throw new RuntimeException("[createPost] Invalid user id " + postRequestDTO.getUserId());
+        }
+
+        Post post = Post.builder()
+                .description(postRequestDTO.getDescription())
+                .fileName("NO-MEDIA")
+                .fileType("NO-MEDIA")
+                .filePath("NO-MEDIA")
+                .createdOn(Timestamp.from(Instant.now()))
+                .userId(postRequestDTO.getUserId())
+                .isBlocked(false)
+                .postType(postRequestDTO.getPostType())
+                .aspectRatio(postRequestDTO.getAspectRatio())
+                .build();
+        return entityToDTO(postDAO.save(post));
     }
 
     @Override
@@ -157,7 +185,12 @@ public class PostServiceImpl implements PostService{
     public List<PostDTO> getUserPosts(Long userId) {
         if( !isValidUserId(userId) )
             throw new RuntimeException("[getUserPosts] Invalid user id " + userId);
-        return postDAO.findByUserId(userId).stream().map(this::entityToDTO).toList();
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdOn");
+        return postDAO
+                .findByUserId(userId, sort)
+                .stream()
+                .map(this::entityToDTO)
+                .toList();
     }
 
     @Override
@@ -172,29 +205,45 @@ public class PostServiceImpl implements PostService{
 
     @Override
     public CommentDTO createComment(CommentRequestDTO commentRequest) {
-        if ( !isValidUserId( commentRequest.getUserId()) )
+        if (!isValidUserId(commentRequest.getUserId())) {
             throw new RuntimeException("[createComment] Invalid user id " + commentRequest.getUserId());
+        }
 
         Optional<Post> post = postDAO.findById(commentRequest.getPostId());
-        if ( post.isEmpty() )
+        if (post.isEmpty()) {
             throw new RuntimeException("[createComment] Invalid post id " + commentRequest.getPostId());
+        }
 
         Comment comment = Comment.builder()
                 .comment(commentRequest.getComment())
                 .commentedDate(Timestamp.from(Instant.now()))
                 .userId(commentRequest.getUserId())
                 .isBlocked(false)
-                .post( post.get() )
+                .post(post.get())
                 .build();
         comment = commentDAO.save(comment);
 
-        Notification notification = new Notification();
-        notification.setSenderId( comment.getUserId() );
-        notification.setRecipientId( post.get().getUserId() );
-        notification.setNotificationType( NotificationType.COMMENT );
-        notification.setPostId( post.get().getId() );
-        notification.setCommentId( comment.getId() );
-        mqService.sendMessageToTopic("notification", notification);
+        try {
+            Notification notification = new Notification();
+            notification.setSenderId(comment.getUserId());
+            notification.setRecipientId(post.get().getUserId());
+            notification.setNotificationType(NotificationType.COMMENT);
+            notification.setPostId(post.get().getId());
+            notification.setCommentId(comment.getId());
+            mqService.sendMessageToTopic("notification", notification);
+        } catch (TimeoutException e) {
+            log.error("[createComment] Kafka TimeoutException for comment id " + comment.getId(), e);
+            throw new RuntimeException("[createComment] Kafka service timeout. Please try again later.", e);
+        } catch (AuthenticationException | AuthorizationException e) {
+            log.error("[createComment] Kafka authentication/authorization error for comment id " + comment.getId(), e);
+            throw new RuntimeException("[createComment] Kafka authentication/authorization failed.", e);
+        } catch (KafkaException e) {
+            log.error("[createComment] General KafkaException for comment id " + comment.getId(), e);
+            throw new RuntimeException("[createComment] Kafka service error. Please try again later.", e);
+        } catch (Exception e) {
+            log.error("[createComment] Error sending notification for comment id " + comment.getId(), e);
+            throw new RuntimeException("[createComment] Error sending notification", e);
+        }
 
         return entityToDTO(comment);
     }
@@ -212,8 +261,10 @@ public class PostServiceImpl implements PostService{
 
     @Override
     public List<CommentDTO> getCommentsForPost(Long postId) {
+        Post post = getPostEntity(postId);
+        Sort sort = Sort.by(Sort.Direction.DESC, "commentedDate");
         return commentDAO
-                .findByPost( getPostEntity(postId))
+                .findByPost(post, sort)
                 .stream()
                 .map(this::entityToDTO)
                 .toList();

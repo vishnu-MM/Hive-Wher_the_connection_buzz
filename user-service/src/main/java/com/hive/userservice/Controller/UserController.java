@@ -168,23 +168,27 @@ public class UserController {
                 LocalDate startDate = endDate.minusDays(endDate.getDayOfMonth() - 1);
                 if (startDate.isAfter(endDate))
                     throw new DateTimeException("Invalid Start and Ending date");
-                return ResponseEntity.ok(service.getOrderCountByMonth(startDate, endDate));
+                return ResponseEntity.ok(service.getUserCountByMonth(startDate, endDate));
             }
             case "YEAR" -> {
                 LocalDate startDate = LocalDate.parse(endDate.getYear() + "-01-01");
                 if (startDate.isAfter(endDate))
                     throw new DateTimeException("Invalid Start and Ending date");
-                return ResponseEntity.ok(service.getOrderCountByYear(startDate, endDate));
+                return ResponseEntity.ok(service.getUserCountByYear(startDate, endDate));
             }
             case "WEEK" -> {
                 LocalDate startDate = endDate.minusDays(endDate.getDayOfWeek().getValue());
                 if (startDate.isAfter(endDate))
                     throw new DateTimeException("Invalid Start and Ending date");
-                return ResponseEntity.ok(service.getOrderCountByWeek(startDate, endDate));
+                return ResponseEntity.ok(service.getUserCountByWeek(startDate, endDate));
 
             }
             default -> throw new RuntimeException();
         }
     }
 
+    @PostMapping("filter")
+    private ResponseEntity<PaginationInfo> filter(@RequestBody UserFilterDTO userFilter) {
+        return ResponseEntity.ok(service.filter(userFilter));
+    }
 }

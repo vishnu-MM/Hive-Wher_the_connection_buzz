@@ -20,7 +20,7 @@ public class PostController {
     private final PostService service;
 
     @PostMapping("/create")
-    public ResponseEntity<PostDTO> createPost(@RequestParam(name = "file") MultipartFile file,
+    public ResponseEntity<PostDTO> createPost(@RequestParam(name = "file", required = false) MultipartFile file,
                                               @RequestParam("description") String description,
                                               @RequestParam("postType") String postType,
                                               @RequestParam("aspectRatio") Double aspectRatio,
@@ -33,7 +33,12 @@ public class PostController {
                 .aspectRatio(aspectRatio)
                 .build();
         System.out.println(postRequestDTO);
-        return new ResponseEntity<>( service.createPost(file, postRequestDTO), HttpStatus.CREATED);
+        if (postRequestDTO.getPostType() == PostType.TEXT_ONLY) {
+            return new ResponseEntity<>( service.createPost(postRequestDTO), HttpStatus.CREATED);
+        }
+        else {
+            return new ResponseEntity<>( service.createPost(file, postRequestDTO), HttpStatus.CREATED);
+        }
     }
 
     @GetMapping("single-post")

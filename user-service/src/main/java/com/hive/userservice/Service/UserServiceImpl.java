@@ -221,7 +221,60 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Integer> getOrderCountByMonth(LocalDate startDate, LocalDate endDate) {
+    public PaginationInfo filter(UserFilterDTO filterDTO) {
+        Integer pageNo = filterDTO.getPageNo();
+        Integer pageSize = filterDTO.getPageSize();
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("joinDate").ascending());
+
+        if (filterDTO.getTime() == DateFilter.ALL && filterDTO.getBlock() != BlockType.ALL) {
+            return filterByBlockOnly(filterDTO, pageable);
+        }
+        else if (filterDTO.getTime() != DateFilter.ALL && filterDTO.getBlock() == BlockType.ALL) {
+            return filterByDateOnly(filterDTO, pageable);
+        }
+        else if (filterDTO.getTime() != DateFilter.ALL) {
+            return filterByBlockAndDate(filterDTO, pageable);
+        }
+        else {
+            return getAllUser(pageNo, pageSize);
+        }
+    }
+
+    private PaginationInfo filterByBlockOnly(UserFilterDTO filterDTO, Pageable pageable) {
+        boolean isBlocked = (BlockType.BLOCKED == filterDTO.getBlock());
+        Page<User> page = userDao.findByRoleAndIsBlocked(Role.USER, isBlocked, pageable);
+        return pageToPaginationInfo(page);
+    }
+
+    private PaginationInfo filterByDateOnly(UserFilterDTO filterDTO, Pageable pageable) {
+        Date startDate = new Date(filterDTO.getStartingDate().getTime());
+        Date endDate = new Date(filterDTO.getEndingDate().getTime());
+
+        if (filterDTO.getTime() == DateFilter.TODAY || startDate.equals(endDate)) {
+            Page<User> page = userDao.findByRoleAndJoinDate(Role.USER, startDate, pageable);
+            return pageToPaginationInfo(page);
+        } else {
+            Page<User> page = userDao.findByRoleAndJoinDateBetween(Role.USER, startDate, endDate, pageable);
+            return pageToPaginationInfo(page);
+        }
+    }
+
+    private PaginationInfo filterByBlockAndDate(UserFilterDTO filterDTO, Pageable pageable) {
+        Date startDate = new Date(filterDTO.getStartingDate().getTime());
+        Date endDate = new Date(filterDTO.getEndingDate().getTime());
+        boolean isBlocked = (BlockType.BLOCKED == filterDTO.getBlock());
+
+        if (filterDTO.getTime() == DateFilter.TODAY || startDate.equals(endDate)) {
+            Page<User> page = userDao.findByRoleAndIsBlockedAndJoinDate(Role.USER, isBlocked,startDate,pageable);
+            return pageToPaginationInfo(page);
+        } else {
+            Page<User> page = userDao.findByRoleAndIsBlockedAndJoinDateBetween(Role.USER,isBlocked,startDate,endDate,pageable);
+            return pageToPaginationInfo(page);
+        }
+    }
+
+    @Override
+    public Map<String, Integer> getUserCountByMonth(LocalDate startDate, LocalDate endDate) {
         Map<String, Integer> dateCountMap = new HashMap<>(31);
         LocalDate current = startDate;
         while (!current.isAfter(endDate)) {
@@ -235,7 +288,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Integer> getOrderCountByWeek(LocalDate startDate, LocalDate endDate) {
+    public Map<String, Integer> getUserCountByWeek(LocalDate startDate, LocalDate endDate) {
         Map<String, Integer> dateCountMap = new HashMap<>(31);
         LocalDate current = startDate;
         while (!current.isAfter(endDate)) {
@@ -249,7 +302,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Map<String, Integer> getOrderCountByYear(LocalDate startDate, LocalDate endDate) {
+    public Map<String, Integer> getUserCountByYear(LocalDate startDate, LocalDate endDate) {
         Map<String, Integer> dateCountMap = new HashMap<>(12);
         LocalDate current = startDate;
         int year = current.getYear();
@@ -284,6 +337,19 @@ public class UserServiceImpl implements UserService {
                 .image(imageDTO.getImage())
                 .imageType(imageDTO.getImageType())
                 .user(user)
+                .build();
+    }
+
+    private PaginationInfo pageToPaginationInfo(Page<User> page) {
+        List<UserDTO> contents = page.getContent().stream().map(this::entityToDTO).toList();
+        return PaginationInfo.builder()
+                .contents(contents)
+                .pageNo(page.getNumber())
+                .pageSize(page.getSize())
+                .hasNext(page.hasNext())
+                .isLast(page.isLast())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
                 .build();
     }
 }

@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface PostService {
     PostDTO createPost(MultipartFile file, PostRequestDTO postRequestDTO);
+    PostDTO createPost(PostRequestDTO postRequestDTO);
     byte[] getPostFile(Long postId) throws IOException;
     PostDTO getPost(Long postId);
     List<PostDTO> getPostsForUser(Long userId);
