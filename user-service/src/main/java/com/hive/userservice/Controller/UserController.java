@@ -1,16 +1,13 @@
 package com.hive.userservice.Controller;
 
 import com.hive.userservice.DTO.*;
-import com.hive.userservice.Entity.Image;
 import com.hive.userservice.Exception.InvalidUserDetailsException;
 import com.hive.userservice.Exception.UserNotFoundException;
 import com.hive.userservice.Service.ComplaintsService;
 import com.hive.userservice.Service.UserService;
 import com.hive.userservice.Utility.ImageType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -147,6 +144,11 @@ public class UserController {
         return ResponseEntity.ok(service.search(searchQuery));
     }
 
+    @GetMapping("complaints-search")
+    public ResponseEntity<List<ComplaintsDTO>> complaintsSearch(@RequestParam("searchQuery") String searchQuery){
+        return ResponseEntity.ok(complaintsService.search(searchQuery));
+    }
+
     @PostMapping("report-user")
     public ResponseEntity<Void> saveComplaint(@RequestBody ComplaintsDTO complaintsDTO) {
         System.out.println(complaintsDTO);
@@ -188,7 +190,12 @@ public class UserController {
     }
 
     @PostMapping("filter")
-    private ResponseEntity<PaginationInfo> filter(@RequestBody UserFilterDTO userFilter) {
+    private ResponseEntity<PaginationInfo> filter(@RequestBody FilterDTO userFilter) {
         return ResponseEntity.ok(service.filter(userFilter));
+    }
+
+    @PostMapping("complaint-filter")
+    private ResponseEntity<ComplaintsPage> complaintFilter(@RequestBody FilterDTO userFilter) {
+        return ResponseEntity.ok(complaintsService.filter(userFilter));
     }
 }

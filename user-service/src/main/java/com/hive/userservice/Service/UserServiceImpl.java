@@ -15,7 +15,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
@@ -221,7 +220,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public PaginationInfo filter(UserFilterDTO filterDTO) {
+    public PaginationInfo filter(FilterDTO filterDTO) {
         Integer pageNo = filterDTO.getPageNo();
         Integer pageSize = filterDTO.getPageSize();
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("joinDate").ascending());
@@ -240,13 +239,13 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private PaginationInfo filterByBlockOnly(UserFilterDTO filterDTO, Pageable pageable) {
+    private PaginationInfo filterByBlockOnly(FilterDTO filterDTO, Pageable pageable) {
         boolean isBlocked = (BlockType.BLOCKED == filterDTO.getBlock());
         Page<User> page = userDao.findByRoleAndIsBlocked(Role.USER, isBlocked, pageable);
         return pageToPaginationInfo(page);
     }
 
-    private PaginationInfo filterByDateOnly(UserFilterDTO filterDTO, Pageable pageable) {
+    private PaginationInfo filterByDateOnly(FilterDTO filterDTO, Pageable pageable) {
         Date startDate = new Date(filterDTO.getStartingDate().getTime());
         Date endDate = new Date(filterDTO.getEndingDate().getTime());
 
@@ -259,7 +258,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private PaginationInfo filterByBlockAndDate(UserFilterDTO filterDTO, Pageable pageable) {
+    private PaginationInfo filterByBlockAndDate(FilterDTO filterDTO, Pageable pageable) {
         Date startDate = new Date(filterDTO.getStartingDate().getTime());
         Date endDate = new Date(filterDTO.getEndingDate().getTime());
         boolean isBlocked = (BlockType.BLOCKED == filterDTO.getBlock());

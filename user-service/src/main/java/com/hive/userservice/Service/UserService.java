@@ -3,11 +3,10 @@ package com.hive.userservice.Service;
 import com.hive.userservice.DTO.ImageDTO;
 import com.hive.userservice.DTO.PaginationInfo;
 import com.hive.userservice.DTO.UserDTO;
-import com.hive.userservice.DTO.UserFilterDTO;
+import com.hive.userservice.DTO.FilterDTO;
 import com.hive.userservice.Exception.InvalidUserDetailsException;
 import com.hive.userservice.Exception.UserNotFoundException;
 import com.hive.userservice.Utility.ImageType;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -28,7 +27,7 @@ public interface UserService {
     Long getTotalUsers();
     PaginationInfo getAllUser(Integer pageNo, Integer pageSize);
     List<UserDTO> search(String searchQuery);
-    PaginationInfo filter(UserFilterDTO userFilter);
+    PaginationInfo filter(FilterDTO userFilter);
     Map<String, Integer> getUserCountByMonth(LocalDate startDate, LocalDate endDate);
     Map<String, Integer> getUserCountByWeek(LocalDate startDate, LocalDate endDate);
     Map<String, Integer> getUserCountByYear(LocalDate startDate, LocalDate endDate);

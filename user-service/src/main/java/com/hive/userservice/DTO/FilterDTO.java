@@ -12,7 +12,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserFilterDTO {
+public class FilterDTO {
     private BlockType block;
     private DateFilter time;
     private Date startingDate;
