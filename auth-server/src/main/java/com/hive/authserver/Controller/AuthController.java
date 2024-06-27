@@ -15,6 +15,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("api/auth")
 @RequiredArgsConstructor
@@ -32,8 +35,11 @@ public class AuthController {
     }
 
     @PostMapping("send-otp")
-    public ResponseEntity<String> sentOTP(@RequestParam("email") String email){
-        return ResponseEntity.ok(service.sendOTP(email));
+    public ResponseEntity<Map<String, String>> sendOTP(@RequestParam("email") String email) {
+        String message = service.sendOTP(email);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", message);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("verify-otp")
