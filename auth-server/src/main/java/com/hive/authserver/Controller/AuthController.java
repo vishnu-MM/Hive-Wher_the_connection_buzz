@@ -5,6 +5,7 @@ import com.hive.authserver.DTO.AuthResponse;
 import com.hive.authserver.DTO.UserSignInDTO;
 import com.hive.authserver.DTO.UserSignUpDTO;
 import com.hive.authserver.Service.AuthService;
+import com.hive.authserver.Service.OAuthService;
 import com.hive.authserver.Utility.OtpVerificationStatus;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -15,6 +16,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,6 +27,7 @@ import java.util.Map;
 public class AuthController {
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     private final AuthService service;
+    private final OAuthService oAuthService;
 
     @PostMapping("register")
     public ResponseEntity<AuthResponse> userRegister(@RequestBody UserSignUpDTO newUser){
@@ -94,5 +98,27 @@ public class AuthController {
     @GetMapping("get-username")
     public ResponseEntity<String> getUsername(@RequestHeader(name = "Authorization") String authorizationHeader){
         return ResponseEntity.ok(service.getUsername(authorizationHeader));
+    }
+
+    // Google Auth using OAuth2.0
+    @GetMapping("google-auth-url")
+    public ResponseEntity<Map<String, String>> auth() {
+        Map<String, String> response = new HashMap<>(1);
+        response.put("response", oAuthService.getGoogleAuthUrl());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("google-auth-register")
+    public ResponseEntity<Void> callback(@RequestParam("code") String code) {
+        try {
+            oAuthService.registerWithGoogleOAuth(code);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (URISyntaxException e) {
+            log.error(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

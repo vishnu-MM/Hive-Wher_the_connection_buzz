@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -15,9 +16,11 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.introspection.OpaqueTokenIntrospector;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Properties;
 
@@ -27,6 +30,7 @@ import java.util.Properties;
 public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthFilter jwtAuthFilter;
+    private final WebClient userInfoClient;
 
     @Value("${spring.mail.properties.mail.host}")
     private String host;
@@ -45,9 +49,11 @@ public class SecurityConfig {
                         .requestMatchers("api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .oauth2ResourceServer(c -> c.opaqueToken(Customizer.withDefaults()))
                 .userDetailsService(userDetailsService)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+//                .cors(Customizer.withDefaults())
                 .build();
     }
 
@@ -73,5 +79,10 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig)
     throws Exception {
         return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
+    public OpaqueTokenIntrospector introspector() {
+        return new GoogleOpaqueTokenIntrospector(userInfoClient);
     }
 }

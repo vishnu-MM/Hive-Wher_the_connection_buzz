@@ -26,6 +26,14 @@ spring:
             enable: true
           ssl:
             trust: "*"
+# OAuth Config
+  security:
+    oauth2:
+      resourceserver:
+        opaque-token:
+          introspection-uri: https://www.googleapis.com/
+          clientId: "790984714936-e8grp65jr5dlrfh65mihle51ma083c8s.apps.googleusercontent.com"
+          clientSecret: "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"
 
 # Eureka Client Config
 eureka:
