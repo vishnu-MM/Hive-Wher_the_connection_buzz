@@ -117,12 +117,8 @@ public class AuthService {
     }
 
     public String getUsername(String authorizationHeader) {
-        System.out.println(authorizationHeader);
         String token = authorizationHeader.replace("Bearer ", "");
-        System.out.println(token);
-        String username = jwtService.extractUsername(token);
-        System.out.println(username);
-        return username;
+        return jwtService.extractUsername(token);
     }
 
     private UserDTO entityToDTO(User user) {

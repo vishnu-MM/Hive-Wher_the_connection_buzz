@@ -69,14 +69,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getCurrentUserProfile(String authorizationHeader) throws UserNotFoundException {
-        System.out.println(authorizationHeader);
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", authorizationHeader);
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        String url = "http://localhost:8181/api/auth/get-username";
-        String username = restTemplate.exchange(url, HttpMethod.GET, entity, String.class).getBody();
-        System.out.println(username);
+        String url = "http://localhost:8181/api/auth/get-username?Authorization=" + authorizationHeader;
+        String username = restTemplate.exchange(url, HttpMethod.GET, null, String.class).getBody();
         return findUserByUsername(username);
     }
 

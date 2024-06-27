@@ -95,10 +95,7 @@ public class AuthController {
     }
 
     @GetMapping("get-username")
-    public ResponseEntity<String> getUsername(@RequestHeader(name = "Authorization") String authorizationHeader){
-        System.out.println("getting into controller");
-        System.out.println(authorizationHeader);
-        System.out.println("going for service");
+    public ResponseEntity<String> getUsername(@RequestParam("Authorization") String authorizationHeader){
         return ResponseEntity.ok(service.getUsername(authorizationHeader));
     }
 
