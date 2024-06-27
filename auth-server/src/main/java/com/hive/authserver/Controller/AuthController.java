@@ -1,6 +1,7 @@
 package com.hive.authserver.Controller;
 
 import com.hive.authserver.CustomException.UserBlockedException;
+import com.hive.authserver.CustomException.UserExistsException;
 import com.hive.authserver.DTO.AuthResponse;
 import com.hive.authserver.DTO.UserSignInDTO;
 import com.hive.authserver.DTO.UserSignUpDTO;
@@ -77,13 +78,11 @@ public class AuthController {
 
     @GetMapping("check-email")
     public ResponseEntity<Boolean> isEmailExists(@RequestParam String email) {
-        System.out.println("Request is getting with email " + email);
         return new ResponseEntity<>(service.existsByEmail(email), HttpStatus.OK);
     }
 
     @GetMapping("check-username")
     public ResponseEntity<Boolean> isUsernameExists(@RequestParam String username) {
-        System.out.println("Request is getting with username " + username);
         return new ResponseEntity<>(service.existsByUsername(username), HttpStatus.OK);
     }
 
@@ -97,6 +96,9 @@ public class AuthController {
 
     @GetMapping("get-username")
     public ResponseEntity<String> getUsername(@RequestHeader(name = "Authorization") String authorizationHeader){
+        System.out.println("getting into controller");
+        System.out.println(authorizationHeader);
+        System.out.println("going for service");
         return ResponseEntity.ok(service.getUsername(authorizationHeader));
     }
 
@@ -108,17 +110,24 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("google-auth-register")
-    public ResponseEntity<Void> callback(@RequestParam("code") String code) {
+    @PostMapping("google-auth-register")
+    public ResponseEntity<AuthResponse> callback(@RequestBody Map<String, String> payload) {
+        String code = payload.get("code");
         try {
-            oAuthService.registerWithGoogleOAuth(code);
-            return new ResponseEntity<>(HttpStatus.OK);
+            AuthResponse authResponse = oAuthService.registerWithGoogleOAuth(code);
+            return new ResponseEntity<>(authResponse, HttpStatus.OK);
         } catch (URISyntaxException e) {
             log.error(e.getMessage());
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            AuthResponse authResponse = new AuthResponse(null, null, null, "Invalid AuthCode or Time Expired");
+            return new ResponseEntity<>(authResponse, HttpStatus.UNAUTHORIZED);
         } catch (IOException e) {
             log.error(e.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            AuthResponse authResponse = new AuthResponse(null, null, null, "Something Went Wrong! Try again later");
+            return new ResponseEntity<>(authResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (UserExistsException e) {
+            AuthResponse authResponse = new AuthResponse(null, null, null, e.getMessage());
+            return new ResponseEntity<>(authResponse, HttpStatus.FORBIDDEN);
         }
     }
+
 }

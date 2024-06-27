@@ -40,13 +40,8 @@ public class AuthService {
                 .isBlocked(false)
                 .blockReason("NOT BLOCKED")
                 .build();
-        dao.save(user);
-        return new AuthResponse(
-                jwtService.generateToken(user),
-                user.getId(),
-                user.getRole(),
-                "CREATED"
-        );
+
+        return getAuthResponse( dao.save(user) );
     }
 
     public AuthResponse authenticate(UserSignInDTO userDTO) {
@@ -58,15 +53,15 @@ public class AuthService {
         if(userOptional.isEmpty())
             throw new UsernameNotFoundException(userDTO.getUsername());
 
-        User user = userOptional.get();
-        String token = jwtService.generateToken(user);
+        return getAuthResponse( userOptional.get() );
+    }
 
-        return new AuthResponse(
-                token,
-                user.getId(),
-                user.getRole(),
-                "AUTHENTICATED"
-        );
+    public AuthResponse getAuthResponse(User user) {
+        String token = jwtService.generateToken(user);
+        String msg = "AUTHENTICATED";
+        Role role = user.getRole();
+        Long userId = user.getId();
+        return new AuthResponse(token, userId, role, msg);
     }
 
     public Boolean existsByEmail(String email) {
@@ -122,8 +117,12 @@ public class AuthService {
     }
 
     public String getUsername(String authorizationHeader) {
+        System.out.println(authorizationHeader);
         String token = authorizationHeader.replace("Bearer ", "");
-        return jwtService.extractUsername(token);
+        System.out.println(token);
+        String username = jwtService.extractUsername(token);
+        System.out.println(username);
+        return username;
     }
 
     private UserDTO entityToDTO(User user) {

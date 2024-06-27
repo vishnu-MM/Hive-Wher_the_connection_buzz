@@ -28,6 +28,9 @@ public class UserController {
     @GetMapping("profile")
     public ResponseEntity<UserDTO> getMyProfile(@RequestHeader(name = "Authorization") String authorizationHeader) {
         try {
+            System.out.println("getting into controller");
+            System.out.println(authorizationHeader);
+            System.out.println("going for service");
             return ResponseEntity.ok(service.getCurrentUserProfile(authorizationHeader));
         }
         catch (UserNotFoundException e) {

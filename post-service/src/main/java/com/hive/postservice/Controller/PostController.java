@@ -50,19 +50,21 @@ public class PostController {
     public ResponseEntity<byte[]> getImage(@PathVariable("postId") Long postId ) {
         try {
             PostDTO postDTO = service.getPost(postId);
+            if (postDTO.getPostType() == PostType.TEXT_ONLY) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
             byte[] fileBytes = service.getPostFile(postId);
             HttpHeaders headers = new HttpHeaders();
+
             if(postDTO.getPostType() == PostType.IMAGE){
                 headers.setContentType(MediaType.IMAGE_PNG);
             }
             else if(postDTO.getPostType() == PostType.VIDEO){
                 headers.setContentType(MediaType.valueOf("video/mp4"));
             }
-            else {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-            return new ResponseEntity<>(fileBytes, headers, HttpStatus.OK);
 
+            return new ResponseEntity<>(fileBytes, headers, HttpStatus.OK);
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
