@@ -37,17 +37,18 @@ public class MessageQueueService {
 
     private NotificationDTO messageToDTO(Notification message) {
         TypeOfNotification typeOfNotification;
-        if ( message.getNotificationType() == NotificationType.LIKE )
+        if ( message.getNotificationType() == NotificationType.LIKE ) {
             typeOfNotification = TypeOfNotification.LIKE;
-        else if ( message.getNotificationType() == NotificationType.COMMENT )
+        } else if ( message.getNotificationType() == NotificationType.COMMENT ) {
             typeOfNotification = TypeOfNotification.COMMENT;
-        else if ( message.getNotificationType() == NotificationType.FRIEND_REQUEST )
+        } else if ( message.getNotificationType() == NotificationType.FRIEND_REQUEST ) {
             typeOfNotification = TypeOfNotification.FRIEND_REQUEST;
-        else if ( message.getNotificationType() == NotificationType.FRIEND_REQUEST_ACCEPTED )
-            typeOfNotification = TypeOfNotification.FRIEND_REQUEST_ACCEPTED;
-        else
-            throw new RuntimeException("Invalid NotificationType");
+        } else if ( message.getNotificationType() == NotificationType.FRIEND_REQUEST_ACCEPTED ) {
 
+            typeOfNotification = TypeOfNotification.FRIEND_REQUEST_ACCEPTED;
+        } else {
+            throw new RuntimeException("Invalid NotificationType");
+        }
         return NotificationDTO.builder()
                 .id(message.getId())
                 .senderId(message.getSenderId())

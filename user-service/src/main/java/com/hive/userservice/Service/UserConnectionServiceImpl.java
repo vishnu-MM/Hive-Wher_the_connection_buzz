@@ -1,5 +1,7 @@
 package com.hive.userservice.Service;
 
+import com.hive.DTO.Notification;
+import com.hive.Utility.NotificationType;
 import com.hive.userservice.DTO.ConnectionDTO;
 import com.hive.userservice.Entity.User;
 import com.hive.userservice.Entity.UserConnection;
@@ -11,7 +13,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
 import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +23,7 @@ import java.util.Optional;
 public class UserConnectionServiceImpl implements UserConnectionService{
     private final UserDAO userDao;
     private final UserConnectionDAO dao;
+    private final MessageQueueService mqService;
 
     @Override
     public List<User> getConnectionForUser(Long userId) {
@@ -64,34 +66,69 @@ public class UserConnectionServiceImpl implements UserConnectionService{
 
     @Transactional
     private ConnectionDTO saveNewConnection(UserConnection connection) {
-        Optional<UserConnection> connectionOpt = dao.findByUserAndFriend(connection.getUser(), connection.getFriend());
-        if (connectionOpt.isPresent()) {
-            return entityToDTO(connectionOpt.get());
+        Optional<UserConnection> connection1Opt = dao.findByUserAndFriend(connection.getUser(), connection.getFriend());
+        Optional<UserConnection> connection2Opt = dao.findByUserAndFriend(connection.getFriend(), connection.getUser());
+        if (connection1Opt.isPresent() && connection2Opt.isPresent()) {
+            return entityToDTO(connection1Opt.get());
         }
+
         connection = dao.save(connection);
+        UserConnection connection2 = UserConnection.builder()
+                .user(connection.getFriend())
+                .friend( connection.getUser())
+                .status(connection.getStatus())
+                .date(connection.getDate())
+                .build();
+        dao.save(connection2);
+
         // Notification: New Friend Request
+        NotificationType notificationType = NotificationType.FRIEND_REQUEST;
+        sentNotification(notificationType, connection);
+
         return entityToDTO(connection);
     }
 
     @Transactional
     private void deleteConnection(UserConnection connection) {
-        Optional<UserConnection> connectionOpt = dao.findByUserAndFriend(connection.getUser(), connection.getFriend());
-        connectionOpt.ifPresent(dao::delete);
-        // Notification: Friend Got Request Rejected
+        Optional<UserConnection> connection1Opt = dao.findByUserAndFriend(connection.getUser(), connection.getFriend());
+        Optional<UserConnection> connection2Opt = dao.findByUserAndFriend(connection.getFriend(), connection.getUser());
+        connection1Opt.ifPresent(dao::delete);
+        connection2Opt.ifPresent(dao::delete);
     }
 
     @Transactional
     private ConnectionDTO updateConnection(UserConnection connection) {
-        Optional<UserConnection> connectionOpt = dao.findByUserAndFriend(connection.getUser(), connection.getFriend());
-        if (connectionOpt.isEmpty()) {
+        Optional<UserConnection> connection1Opt = dao.findByUserAndFriend(connection.getUser(), connection.getFriend());
+        Optional<UserConnection> connection2Opt = dao.findByUserAndFriend(connection.getFriend(), connection.getUser());
+        if (connection1Opt.isEmpty() || connection2Opt.isEmpty()) {
             connection.setStatus(ConnectionStatue.REJECTED);
             return entityToDTO(connection);
         }
-        connection = connectionOpt.get();
+        UserConnection connection2 = connection1Opt.get();
+        connection2.setStatus(ConnectionStatue.FRIENDS);
+        dao.save(connection2);
+        connection = connection2Opt.get();
         connection.setStatus(ConnectionStatue.FRIENDS);
         connection = dao.save(connection);
+
         // Notification: Friend Got Request Accepted
+        NotificationType notificationType = NotificationType.FRIEND_REQUEST_ACCEPTED;
+        sentNotification(notificationType, connection);
+
         return entityToDTO(connection);
+    }
+
+    private void sentNotification(NotificationType notificationType, UserConnection connection) {
+        Long senderId = connection.getUser().getId();
+        Long recipientId = connection.getFriend().getId();
+        String topic = "notification";
+
+        Notification notification = new Notification();
+        notification.setSenderId(senderId);
+        notification.setRecipientId(recipientId);
+        notification.setNotificationType(notificationType);
+
+        mqService.sendMessageToTopic(topic, notification);
     }
 
     private User getUser(Long id) throws UserNotFoundException {

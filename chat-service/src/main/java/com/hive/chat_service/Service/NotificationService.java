@@ -1,9 +1,11 @@
 package com.hive.chat_service.Service;
 
+import com.hive.Utility.NotificationType;
 import com.hive.chat_service.DTO.NotificationDTO;
 import com.hive.chat_service.DTO.PaginationDTO;
 import com.hive.chat_service.Entity.Notification;
 import com.hive.chat_service.Repository.NotificationDAO;
+import com.hive.chat_service.Utility.TypeOfNotification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +23,9 @@ public class NotificationService {
     private final NotificationDAO dao;
 
     public NotificationDTO save(NotificationDTO notificationDTO) {
+        if (notificationDTO.getTypeOfNotification() == TypeOfNotification.FRIEND_REQUEST_ACCEPTED) {
+            deleteFriendRequestNotification(notificationDTO.getSenderId(), notificationDTO.getRecipientId());
+        }
         Notification notification = Notification.builder()
                 .senderId(notificationDTO.getSenderId())
                 .recipientId(notificationDTO.getRecipientId())
@@ -30,6 +35,10 @@ public class NotificationService {
                 .commentId(notificationDTO.getCommentId())
                 .build();
         return entityToDTO(dao.save(notification));
+    }
+
+    private void deleteFriendRequestNotification(Long senderId, Long recipientId) {
+        dao.deleteBySenderIdAndRecipientIdAndTypeOfNotification(recipientId, senderId, TypeOfNotification.FRIEND_REQUEST);
     }
 
     public PaginationDTO findAll(Long userId, Integer pageNo, Integer pageSize) {
