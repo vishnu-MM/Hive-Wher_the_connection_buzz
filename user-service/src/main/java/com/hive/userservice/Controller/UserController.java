@@ -1,12 +1,16 @@
 package com.hive.userservice.Controller;
 
 import com.hive.userservice.DTO.*;
+import com.hive.userservice.Entity.User;
 import com.hive.userservice.Exception.InvalidUserDetailsException;
 import com.hive.userservice.Exception.UserNotFoundException;
 import com.hive.userservice.Service.ComplaintsService;
+import com.hive.userservice.Service.UserConnectionService;
 import com.hive.userservice.Service.UserService;
 import com.hive.userservice.Utility.ImageType;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +26,10 @@ import java.util.Map;
 @RequestMapping("api/user")
 @RequiredArgsConstructor
 public class UserController {
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService service;
     private final ComplaintsService complaintsService;
+    private final UserConnectionService connectionService;
 
     @GetMapping("profile")
     public ResponseEntity<UserDTO> getMyProfile(@RequestHeader(name = "Authorization") String authorizationHeader) {
@@ -197,5 +203,35 @@ public class UserController {
     @PostMapping("complaint-filter")
     private ResponseEntity<ComplaintsPage> complaintFilter(@RequestBody FilterDTO userFilter) {
         return ResponseEntity.ok(complaintsService.filter(userFilter));
+    }
+
+    @PutMapping("friend-request")
+    private ResponseEntity<ConnectionDTO> updateConnection(@RequestBody ConnectionDTO friendRequest) {
+        try {
+            return new ResponseEntity<>(connectionService.processFriendRequest(friendRequest), HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            log.error(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        catch (Exception e) {
+            log.error(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("friends")
+    private ResponseEntity<List<User>> getUserFriendsList(@RequestParam("userId") Long userId) {
+        return new ResponseEntity<>(connectionService.getConnectionForUser(userId), HttpStatus.OK);
+    }
+
+    @GetMapping("connection-status")
+    private ResponseEntity<ConnectionDTO> getConnection(@RequestParam("senderId") Long senderId,
+                                                        @RequestParam("recipientId") Long recipientId) {
+        try {
+            return new ResponseEntity<>(connectionService.currentRelation(senderId,recipientId), HttpStatus.OK);
+        } catch (UserNotFoundException e) {
+            log.error(e.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 }
