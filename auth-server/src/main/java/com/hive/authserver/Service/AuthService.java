@@ -41,7 +41,7 @@ public class AuthService {
                 .blockReason("NOT BLOCKED")
                 .build();
 
-        return getAuthResponse( dao.save(user) );
+        return getAuthResponse(dao.save(user), "REGISTRATION_SUCCESS");
     }
 
     public AuthResponse authenticate(UserSignInDTO userDTO) {
@@ -53,12 +53,11 @@ public class AuthService {
         if(userOptional.isEmpty())
             throw new UsernameNotFoundException(userDTO.getUsername());
 
-        return getAuthResponse( userOptional.get() );
+        return getAuthResponse(userOptional.get(), "LOGIN_SUCCESS" );
     }
 
-    public AuthResponse getAuthResponse(User user) {
+    public AuthResponse getAuthResponse(User user, String msg) {
         String token = jwtService.generateToken(user);
-        String msg = "AUTHENTICATED";
         Role role = user.getRole();
         Long userId = user.getId();
         return new AuthResponse(token, userId, role, msg);

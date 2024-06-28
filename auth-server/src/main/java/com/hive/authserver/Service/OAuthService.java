@@ -24,6 +24,8 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import com.google.api.services.oauth2.model.Userinfo;
+import com.hive.authserver.DTO.UserSignInDTO;
+
 
 @Service
 @RequiredArgsConstructor
@@ -58,9 +60,15 @@ public class OAuthService {
 
         String email = userInfo.getEmail();
         if (authService.existsByEmail(email)) {
-            throw new UserExistsException(email + "-is in use, User Exists with this email Id");
+            UserSignInDTO userSignInDTO = UserSignInDTO.builder()
+                    .username(email)
+                    .password("asAS12!@")
+                    .build();
+            return authService.authenticate(userSignInDTO);
         }
-        return registerWithGoogleOAuth(userInfo);
+        else {
+            return registerWithGoogleOAuth(userInfo);
+        }
     }
 
     private AuthResponse registerWithGoogleOAuth(Userinfo userinfo) {
@@ -83,7 +91,7 @@ public class OAuthService {
                 .blockReason("NOT BLOCKED")
                 .build();
 
-        return authService.getAuthResponse( dao.save(user) );
+        return authService.getAuthResponse(dao.save(user),"REGISTRATION_SUCCESS");
     }
 
     private String getUniqueUsername(String email) {
