@@ -32,7 +32,7 @@ public class PostController {
                 .userId(userId)
                 .aspectRatio(aspectRatio)
                 .build();
-        System.out.println(postRequestDTO);
+
         if (postRequestDTO.getPostType() == PostType.TEXT_ONLY) {
             return new ResponseEntity<>( service.createPost(postRequestDTO), HttpStatus.CREATED);
         }

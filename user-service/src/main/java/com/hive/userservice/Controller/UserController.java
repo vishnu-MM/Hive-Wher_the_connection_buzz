@@ -224,6 +224,11 @@ public class UserController {
         return new ResponseEntity<>(connectionService.getConnectionForUser(userId), HttpStatus.OK);
     }
 
+    @GetMapping("friends-ids")
+    private ResponseEntity<List<Long>> getUserFriendsIds(@RequestParam("userId") Long userId) {
+        return new ResponseEntity<>(connectionService.getConnectionForUserIds(userId), HttpStatus.OK);
+    }
+
     @GetMapping("connection-status")
     private ResponseEntity<ConnectionDTO> getConnection(@RequestParam("senderId") Long senderId,
                                                         @RequestParam("recipientId") Long recipientId) {

@@ -119,6 +119,7 @@ public class PostServiceImpl implements PostService{
     public List<PostDTO> getPostsForUser(Long userId) {
         if( !isValidUserId(userId) )
             throw new RuntimeException("[getPostsForUser] Invalid user id " + userId);
+        List<Long> userIds = userInterface.getUserFriendsIds(userId).getBody();
 
         return List.of(); //! INCOMPLETE
     }

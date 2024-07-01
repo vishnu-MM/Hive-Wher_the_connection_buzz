@@ -33,6 +33,13 @@ public class UserConnectionServiceImpl implements UserConnectionService{
     }
 
     @Override
+    public List<Long> getConnectionForUserIds(Long userId) {
+        Sort sort =Sort.by("date").descending();
+        List<UserConnection> userConnectionList =  dao.findByUserId(userId, sort);
+        return userConnectionList.stream().map(user -> user.getFriend().getId()).toList();
+    }
+
+    @Override
     public ConnectionDTO currentRelation(Long senderId, Long recipientId) throws UserNotFoundException {
         User user = getUser(senderId);
         User friend = getUser(recipientId);

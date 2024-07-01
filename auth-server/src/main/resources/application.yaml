@@ -11,7 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-# DB_HOST=localhost;DB_NAME=hive_user;DB_USER=postgres;DB_PASSWORD=2248;
+
 # Mail Sender Config
   mail:
     properties:
@@ -32,8 +32,8 @@ spring:
       resourceserver:
         opaque-token:
           introspection-uri: https://www.googleapis.com/
-          clientId: "790984714936-e8grp65jr5dlrfh65mihle51ma083c8s.apps.googleusercontent.com"
-          clientSecret: "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"
+          clientId: ${OAUTH_CLIENT_ID}
+          clientSecret: ${OAUTH_CLIENT_SECRET}
 
 # Eureka Client Config
 eureka:
@@ -46,3 +46,5 @@ eureka:
 # Port Config
 server:
   port: 8181
+#  Envi Variables:
+#  DB_HOST=localhost;DB_NAME=hive_user;DB_USER=postgres;DB_PASSWORD=2248;OAUTH_CLIENT_ID=790984714936-e8grp65jr5dlrfh65mihle51ma083c8s.apps.googleusercontent.com;OAUTH_CLIENT_SECRET=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;
