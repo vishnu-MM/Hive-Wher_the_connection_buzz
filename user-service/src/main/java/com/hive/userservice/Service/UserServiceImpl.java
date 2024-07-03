@@ -20,10 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -207,7 +204,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> search(String searchQuery) {
-        List<User> userList = new ArrayList<>();
+        if (searchQuery.isEmpty()) {
+            return List.of();
+        }
+        Set<User> userList = new HashSet<>();
         userList.addAll(userDao.findUsersByUsernameContainingIgnoreCaseAndRole(searchQuery, Role.USER));
         userList.addAll(userDao.findUsersByNameContainingIgnoreCaseAndRole(searchQuery, Role.USER));
         userList.addAll(userDao.findUsersByEmailContainingIgnoreCaseAndRole(searchQuery, Role.USER));

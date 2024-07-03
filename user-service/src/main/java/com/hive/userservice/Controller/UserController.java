@@ -54,7 +54,7 @@ public class UserController {
     @PutMapping("update")
     public ResponseEntity<UserDTO> profileUpdate(@RequestBody UserDTO user, @RequestHeader(name = "Authorization") String authHeader) {
         try {
-            return new ResponseEntity<>( service.profileUpdate(user,authHeader), HttpStatus.CREATED );
+            return new ResponseEntity<>( service.profileUpdate(user,authHeader), HttpStatus.OK );
         }
         catch (UserNotFoundException | InvalidUserDetailsException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
@@ -92,7 +92,7 @@ public class UserController {
             }
             return ResponseEntity.ok(imageDTO);
         } catch (UserNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         /*
         try {

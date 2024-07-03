@@ -9,7 +9,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-#      DB_HOST=localhost;DB_NAME=hive_user;DB_USER=postgres;DB_PASSWORD=2248;
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 205MB
+      max-request-size: 205MB
 eureka:
   client:
     serviceUrl:
@@ -18,3 +22,4 @@ eureka:
     hostname: localhost
 server:
   port: 8080
+#      DB_HOST=localhost;DB_NAME=hive_user;DB_USER=postgres;DB_PASSWORD=2248;

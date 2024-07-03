@@ -405,7 +405,22 @@ public class PostServiceImpl implements PostService{
         notification.setNotificationType( NotificationType.LIKE );
         notification.setPostId( post.get().getId() );
 
-        mqService.sendMessageToTopic("notification", notification);
+        try{
+            mqService.sendMessageToTopic("notification", notification);
+        } catch (TimeoutException e) {
+            log.error("[createComment] Kafka TimeoutException for comment id " + like.getId(), e);
+            throw new RuntimeException("[createComment] Kafka service timeout. Please try again later.", e);
+        } catch (AuthenticationException | AuthorizationException e) {
+            log.error("[createComment] Kafka authentication/authorization error for comment id " + like.getId(), e);
+            throw new RuntimeException("[createComment] Kafka authentication/authorization failed.", e);
+        } catch (KafkaException e) {
+            log.error("[createComment] General KafkaException for comment id " + like.getId(), e);
+            throw new RuntimeException("[createComment] Kafka service error. Please try again later.", e);
+        } catch (Exception e) {
+            log.error("[createComment] Error sending notification for comment id " + like.getId(), e);
+            throw new RuntimeException("[createComment] Error sending notification", e);
+        }
+
         return entityToDTO(like);
     }
 
