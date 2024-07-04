@@ -71,8 +71,8 @@ public class PostController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<PostDTO>> getPostsForUser(@RequestParam("userId") Long userId){
-        return new ResponseEntity<>(service.getPostsForUser(userId), HttpStatus.OK);
+    public ResponseEntity<PaginationInfo> getPostsForUser(@RequestParam("userId") Long userId){
+        return new ResponseEntity<>(service.getPostsForUser(userId, 0, 10), HttpStatus.OK);
     }
 
     @GetMapping("random")

@@ -11,7 +11,7 @@ public interface PostService {
     PostDTO createPost(PostRequestDTO postRequestDTO);
     byte[] getPostFile(Long postId) throws IOException;
     PostDTO getPost(Long postId);
-    List<PostDTO> getPostsForUser(Long userId);
+    PaginationInfo getPostsForUser(Long userId, Integer pageNo, Integer pageSize);
     List<PostDTO> getRandomPosts(Integer pageNumber, Integer pageSize);
     void deletePost(Long postId);
     PostDTO blockPost(Long postId);

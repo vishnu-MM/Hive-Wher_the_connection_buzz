@@ -35,8 +35,10 @@ import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -116,12 +118,41 @@ public class PostServiceImpl implements PostService{
     }
 
     @Override
-    public List<PostDTO> getPostsForUser(Long userId) {
+    public PaginationInfo getPostsForUser(Long userId, Integer pageNo, Integer pageSize) {
         if( !isValidUserId(userId) )
             throw new RuntimeException("[getPostsForUser] Invalid user id " + userId);
         List<Long> userIds = userInterface.getUserFriendsIds(userId).getBody();
+        if (userIds == null || userIds.isEmpty()) {
+            return PaginationInfo.builder()
+                    .contents(Collections.emptyList())
+                    .pageNo(pageNo)
+                    .pageSize(pageSize)
+                    .totalElements(0L)
+                    .totalPages(0)
+                    .isLast(true)
+                    .hasNext(false)
+                    .build();
+        }
 
-        return List.of(); //! INCOMPLETE
+        Timestamp endDate = new Timestamp(System.currentTimeMillis());
+        Timestamp startDate = new Timestamp(endDate.getTime() - 3 * 24 * 60 * 60 * 1000L); // 3 days ago
+
+        Pageable pageable = PageRequest.of(pageNo, pageSize);
+        Page<Post> postPage = postDAO.findByUserIdInAndCreatedOnBetween(userIds, startDate, endDate, pageable);
+
+        List<PostDTO> postDTOs = postPage.stream()
+                .map(this::entityToDTO)
+                .collect(Collectors.toList());
+
+        return PaginationInfo.builder()
+                .contents(postDTOs)
+                .pageNo(pageNo)
+                .pageSize(pageSize)
+                .totalElements(postPage.getTotalElements())
+                .totalPages(postPage.getTotalPages())
+                .isLast(postPage.isLast())
+                .hasNext(postPage.hasNext())
+                .build();
     }
 
     @Override

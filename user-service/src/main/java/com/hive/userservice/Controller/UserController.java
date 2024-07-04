@@ -220,8 +220,13 @@ public class UserController {
     }
 
     @GetMapping("friends")
-    private ResponseEntity<List<User>> getUserFriendsList(@RequestParam("userId") Long userId) {
-        return new ResponseEntity<>(connectionService.getConnectionForUser(userId), HttpStatus.OK);
+    private ResponseEntity<List<User>> getUserFriendsList(@RequestParam("userId") Long userId,
+                                                          @RequestParam("isAscendingOrder") Boolean isAscendingOrder) {
+        return new ResponseEntity<>(connectionService.getConnectionForUser(userId, isAscendingOrder), HttpStatus.OK);
+    }
+    @GetMapping("friends-count")
+    private ResponseEntity<Long> getUserFriendsCount(@RequestParam("userId") Long userId) {
+        return new ResponseEntity<>(connectionService.getConnectionCount(userId), HttpStatus.OK);
     }
 
     @GetMapping("friends-ids")

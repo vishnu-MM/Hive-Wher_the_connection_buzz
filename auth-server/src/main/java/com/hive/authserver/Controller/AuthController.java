@@ -3,6 +3,7 @@ package com.hive.authserver.Controller;
 import com.hive.authserver.CustomException.UserBlockedException;
 import com.hive.authserver.CustomException.UserExistsException;
 import com.hive.authserver.DTO.AuthResponse;
+import com.hive.authserver.DTO.UserDTO;
 import com.hive.authserver.DTO.UserSignInDTO;
 import com.hive.authserver.DTO.UserSignUpDTO;
 import com.hive.authserver.Service.AuthService;
@@ -45,6 +46,24 @@ public class AuthController {
         Map<String, String> response = new HashMap<>();
         response.put("message", message);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("password-rest/send-otp")
+    public ResponseEntity<Map<String, String>> sendOTPForPasswordRest(@RequestParam("email") String email) {
+        String message = service.sendOTPForPasswordRest(email);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", message);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("password-rest")
+    public ResponseEntity<UserDTO> updatePassword(@RequestBody UserSignInDTO user) {
+        try {
+            return ResponseEntity.ok(service.updatePassword(user));
+        }
+        catch (UsernameNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("verify-otp")

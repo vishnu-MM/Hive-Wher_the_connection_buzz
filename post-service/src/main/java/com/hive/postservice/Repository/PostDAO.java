@@ -30,4 +30,11 @@ public interface PostDAO extends JpaRepository<Post, Long> {
     //When createdOn and Post Type
     Page<Post> findByPostTypeAndCreatedOn(PostType postType, Timestamp createdOn, Pageable pageable);
     Page<Post> findByPostTypeAndCreatedOnBetween(PostType postType, Timestamp startDate, Timestamp endDate, Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.userId IN :userIds AND p.createdOn BETWEEN :startDate AND :endDate")
+    Page<Post> findByUserIdInAndCreatedOnBetween(
+            @Param("userIds") List<Long> userIds,
+            @Param("startDate") Timestamp startDate,
+            @Param("endDate") Timestamp endDate,
+            Pageable pageable);
 }

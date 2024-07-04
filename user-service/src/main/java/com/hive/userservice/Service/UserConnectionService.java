@@ -9,6 +9,7 @@ import java.util.List;
 public interface UserConnectionService {
     ConnectionDTO processFriendRequest(ConnectionDTO connectionDTO) throws UserNotFoundException;
     ConnectionDTO currentRelation(Long senderId, Long recipientId) throws UserNotFoundException;
-    List<User> getConnectionForUser(Long userId);
+    List<User> getConnectionForUser(Long userId, boolean isAscendingOrder);
     List<Long> getConnectionForUserIds(Long userId);
+    Long getConnectionCount(Long userId);
 }

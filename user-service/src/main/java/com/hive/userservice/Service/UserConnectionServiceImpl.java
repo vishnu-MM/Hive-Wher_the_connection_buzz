@@ -26,17 +26,23 @@ public class UserConnectionServiceImpl implements UserConnectionService{
     private final MessageQueueService mqService;
 
     @Override
-    public List<User> getConnectionForUser(Long userId) {
-        Sort sort =Sort.by("date").descending();
-        List<UserConnection> userConnectionList =  dao.findByUserId(userId, sort);
-        return userConnectionList.stream().map(UserConnection::getFriend).toList();
+    public List<User> getConnectionForUser(Long userId, boolean isAscendingOrder) {
+        if (isAscendingOrder) {
+            return dao.findFriendsByUserIdAsc(userId, ConnectionStatue.FRIENDS);
+        }
+        return dao.findFriendsByUserIdDesc(userId, ConnectionStatue.FRIENDS);
     }
 
     @Override
     public List<Long> getConnectionForUserIds(Long userId) {
-        Sort sort =Sort.by("date").descending();
-        List<UserConnection> userConnectionList =  dao.findByUserId(userId, sort);
+        Sort sort = Sort.by("date").descending();
+        List<UserConnection> userConnectionList =  dao.findByUserIdAndStatus(userId, ConnectionStatue.FRIENDS, sort);
         return userConnectionList.stream().map(user -> user.getFriend().getId()).toList();
+    }
+
+    @Override
+    public Long getConnectionCount(Long userId) {
+        return dao.countByUserIdAndStatus(userId, ConnectionStatue.FRIENDS);
     }
 
     @Override

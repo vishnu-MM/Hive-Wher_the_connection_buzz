@@ -19,7 +19,8 @@ public class RouteValidator {
         "/api/auth/validate",
         "/api/auth/get-username",
         "/api/auth/google-auth-url",
-        "/api/auth/google-auth-register"
+        "/api/auth/google-auth-register",
+        "/api/auth/password-rest/send-otp"
     );
 
     public Predicate<ServerHttpRequest> isSecured = request -> openApiEndpoints

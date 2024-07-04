@@ -92,6 +92,16 @@ public class AuthService {
         return "OTP sent";
     }
 
+    public String sendOTPForPasswordRest(String email) {
+        Optional<User> userOptional = dao.findByEmail(email);
+
+        if (userOptional.isEmpty())
+            throw new UsernameNotFoundException(email);
+
+        otpService.sendOTPForPasswordRest(entityToDTO(userOptional.get()));
+        return "OTP sent";
+    }
+
     @Transactional
     public OtpVerificationStatus validateOTP(String otp, String email) {
         OtpVerificationStatus status = otpService.verifyOTP(email, otp);
@@ -120,6 +130,16 @@ public class AuthService {
         return jwtService.extractUsername(token);
     }
 
+    public UserDTO updatePassword(UserSignInDTO user) {
+        Optional<User> userOptional = dao.findByEmail(user.getUsername());
+        if (userOptional.isEmpty())
+            throw new UsernameNotFoundException(user.getUsername());
+        User updatedUser = userOptional.get();
+        updatedUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        updatedUser = dao.save(updatedUser);
+        return entityToDTO(updatedUser);
+    }
+
     private UserDTO entityToDTO(User user) {
         return UserDTO.builder()
                 .id(user.getId())
@@ -134,5 +154,4 @@ public class AuthService {
                 .blockReason(user.getBlockReason())
                 .build();
     }
-
 }

@@ -11,7 +11,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -42,12 +41,16 @@ public class OtpService {
             javaMailSender.send(message);
             System.out.println("OTP "+otp);
             availableOtps.put(recipientEmail, new OtpDetails(recipientEmail, otp, System.currentTimeMillis()));
-            log.info("OTP sent successfully {}", availableOtps.get(recipientEmail));
+            logging(recipientEmail);
         }
         catch (Exception e) {
-            log.error("Error Occurred while sending OTP verification");
+            errorLogging();
             throw new RuntimeException("Error Occurred while sending OTP verification");
         }
+    }
+
+    private void logging(String recipientEmail) {
+        log.info("OTP sent successfully {}", availableOtps.get(recipientEmail));
     }
 
     public OtpVerificationStatus verifyOTP(String recipient, String enteredOtp) {
@@ -81,6 +84,42 @@ public class OtpService {
     private String generateEmailBody(String name, String otp ) {
         return "Hello " + name + ",\n\nYour One-Time Password (OTP) is: " + otp +
                 "\n\nThis OTP is valid for a short period. Please use it for authentication as soon as possible.\n\n" +
-                "If you didn't request this OTP, please contact our support team.\n\nEnjoy shopping.";
+                " if its not you simply ignore this message.\n\n"+
+                "Have a great day";
+    }
+
+    public void sendOTPForPasswordRest(UserDTO userDTO) {
+        String recipientEmail = userDTO.getEmail();
+        String recipientUsername = userDTO.getUsername();
+        String otp = generateOTP();
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom(from);
+        message.setTo(recipientEmail);
+        message.setSubject("Password Rest - " + otp + " - HIVE");
+        message.setText(generateEmailBodyForPasswordReset(recipientUsername, otp));
+
+        try {
+            javaMailSender.send(message);
+            System.out.println("OTP "+otp);
+            availableOtps.put(recipientEmail, new OtpDetails(recipientEmail, otp, System.currentTimeMillis()));
+            logging(recipientEmail);
+        }
+        catch (Exception e) {
+            errorLogging();
+            throw new RuntimeException("Error Occurred while sending OTP");
+        }
+    }
+
+    private void errorLogging() {
+        log.error("Error Occurred while sending OTP");
+    }
+
+    private String generateEmailBodyForPasswordReset(String name, String otp ) {
+        return "Hello " + name + ",\n\n" +
+               "We have received a request for updating password, if its not you simply ignore this message.\n\n"+
+               "Your One-Time Password (OTP) is: " + otp +
+               "\n\nThis OTP is valid for a short period. Please use it for authentication as soon as possible.\n\n" +
+               "Have a great day";
     }
 }
