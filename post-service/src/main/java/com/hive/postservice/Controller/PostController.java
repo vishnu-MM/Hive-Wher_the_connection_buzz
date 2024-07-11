@@ -242,4 +242,10 @@ public class PostController {
         service.deleteAllPostByUser(userId);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("delete/by-userid")
+    public ResponseEntity<Void> deleteUserIdPosts(@RequestParam("userId") Long userId) {
+        service.deleteAllPostByUser(userId);
+        return ResponseEntity.ok().build();
+    }
 }

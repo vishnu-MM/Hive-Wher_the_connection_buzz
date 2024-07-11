@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Table
@@ -46,4 +47,11 @@ public class Post {
     @Enumerated(EnumType.STRING)
     @Column(name = "post_type", nullable = false)
     private PostType postType;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Comment> comments;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<Like> likes;
+
 }
