@@ -44,8 +44,8 @@ public class OtpService {
             logging(recipientEmail);
         }
         catch (Exception e) {
-            errorLogging();
-            throw new RuntimeException("Error Occurred while sending OTP verification");
+            errorLogging(e);
+            throw new RuntimeException("Error Occurred while sending OTP verification"+ e.getMessage() +" " + e.getLocalizedMessage());
         }
     }
 
@@ -81,12 +81,15 @@ public class OtpService {
         return Integer.toString(OneTimePassword);
     }
 
-    private String generateEmailBody(String name, String otp ) {
-        return "Hello " + name + ",\n\nYour One-Time Password (OTP) is: " + otp +
-                "\n\nThis OTP is valid for a short period. Please use it for authentication as soon as possible.\n\n" +
-                " if its not you simply ignore this message.\n\n"+
-                "Have a great day";
+    private String generateEmailBody(String name, String otp) {
+        return "Hello " + name + ",\n\n" +
+                "Your One-Time Password (OTP) is: " + otp + "\n\n" +
+                "This OTP is valid for a short period. Please use it for authentication as soon as possible.\n\n" +
+                "If you did not request this OTP, please ignore this message.\n\n" +
+                "Have a great day,\n" +
+                "The HIVE Team";
     }
+
 
     public void sendOTPForPasswordRest(UserDTO userDTO) {
         String recipientEmail = userDTO.getEmail();
@@ -106,13 +109,13 @@ public class OtpService {
             logging(recipientEmail);
         }
         catch (Exception e) {
-            errorLogging();
-            throw new RuntimeException("Error Occurred while sending OTP");
+            errorLogging(e);
+            throw new RuntimeException(e.getMessage());
         }
     }
 
-    private void errorLogging() {
-        log.error("Error Occurred while sending OTP");
+    private void errorLogging(Exception e) {
+        log.error("Error Occurred while sending OTP {} \n {}", e.getMessage(), e.getLocalizedMessage());
     }
 
     private String generateEmailBodyForPasswordReset(String name, String otp ) {

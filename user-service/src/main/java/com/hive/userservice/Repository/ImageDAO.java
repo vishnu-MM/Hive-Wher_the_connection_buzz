@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface ImageDAO extends JpaRepository<Image, Long> {
     Optional<Image> findByUserAndImageType(User user, ImageType imageType);
     Boolean existsByUserAndImageType(User user, ImageType imageType);
+    void deleteByUserId(Long userId);
 }

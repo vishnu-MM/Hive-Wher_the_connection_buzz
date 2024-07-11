@@ -2,12 +2,10 @@ package com.hive.chat_service.Controller;
 
 import com.hive.chat_service.DTO.GroupDTO;
 import com.hive.chat_service.DTO.NotificationDTO;
+import com.hive.chat_service.DTO.OnlineUpdate;
 import com.hive.chat_service.DTO.PaginationDTO;
 import com.hive.chat_service.Entity.Message;
-import com.hive.chat_service.Service.ChatRoomService;
-import com.hive.chat_service.Service.GroupService;
-import com.hive.chat_service.Service.MessageService;
-import com.hive.chat_service.Service.NotificationService;
+import com.hive.chat_service.Service.*;
 import com.hive.chat_service.Utility.MessageType;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -31,6 +29,7 @@ public class ChatController {
     private final MessageService messageService;
     private final ChatRoomService chatRoomService;
     private final GroupService groupService;
+    private final UserOnlineService uoService;
 
     @MessageMapping("/chat")
     public void processMessage(@Payload Message message) {
@@ -57,6 +56,17 @@ public class ChatController {
         }
     }
 
+    @MessageMapping("/update")
+    public void onlineListUpdation(@Payload OnlineUpdate onlineUpdate) {
+        System.out.println(onlineUpdate);
+        String destination = "/queue/online";
+        for (Long userId : onlineUpdate.getFriendList()) {
+            messagingTemplate.convertAndSendToUser(userId.toString(), destination, onlineUpdate);
+        }
+    }
+
+
+    //REST APIs
 
     @GetMapping("/messages")
     public ResponseEntity<List<Message>> findMessages(@RequestParam("senderId") String senderId,

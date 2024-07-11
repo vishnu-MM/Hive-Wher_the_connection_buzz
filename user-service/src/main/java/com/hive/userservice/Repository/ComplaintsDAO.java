@@ -21,4 +21,6 @@ public interface ComplaintsDAO extends JpaRepository<Complaints, Long> {
     List<Complaints> findByReportedUserNameContainingIgnoreCase(String search);
     List<Complaints> findByReportedUserEmailContainingIgnoreCase(String search);
     List<Complaints> findByDescriptionContainingIgnoreCase(String search);
+    void deleteBySenderIdId(Long userId);
+    void deleteByReportedUserId(Long userId);
 }

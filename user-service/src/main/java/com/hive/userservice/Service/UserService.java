@@ -31,13 +31,11 @@ public interface UserService {
     Map<String, Integer> getUserCountByMonth(LocalDate startDate, LocalDate endDate);
     Map<String, Integer> getUserCountByWeek(LocalDate startDate, LocalDate endDate);
     Map<String, Integer> getUserCountByYear(LocalDate startDate, LocalDate endDate);
+    void deleteAccount(Long userId);
     //* Image
     ImageDTO saveImage(MultipartFile file, ImageType imageType, String authHeader) throws UserNotFoundException, IOException;
     ImageDTO getImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException;
     ImageDTO getImageByImageId(Long imageId);
     Boolean existsImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException;
     Boolean existsImageByImageId(Long imageId);
-
-
-
 }

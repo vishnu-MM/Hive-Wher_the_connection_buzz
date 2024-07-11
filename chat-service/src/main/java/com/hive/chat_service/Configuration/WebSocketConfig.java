@@ -48,9 +48,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return Jackson2ObjectMapperBuilder.json()
-                .modules(new JavaTimeModule())
-                .build();
+        return Jackson2ObjectMapperBuilder.json().modules(new JavaTimeModule()).build();
     }
-
 }

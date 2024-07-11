@@ -31,7 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -501,6 +500,31 @@ public class PostServiceImpl implements PostService{
             throw new RuntimeException("[createLike] Invalid post id " + likeRequest.getPostId());
 
         return likeDAO.existsByPostAndUserId(post.get(), likeRequest.getUserId());
+    }
+
+    @Override
+    @Transactional
+    public void deleteAllPostByUser(Long userId) {
+        commentDAO.deleteByUserId(userId);
+        likeDAO.deleteByUserId(userId);
+        List<Post> posts = postDAO.findByUserId(userId, Sort.by("id").ascending());
+        for (Post post : posts) {
+            likeDAO.deleteByPostId(post.getId());
+            commentDAO.deleteByPostId(post.getId());
+            if (post.getPostType() != PostType.TEXT_ONLY) {
+                try {
+                    File file = new File(post.getFilePath());
+                    log.info("File to delete {} and is it exists {}", post.getFilePath(), file.exists());
+                    if (file.exists()) {
+                        boolean res = file.delete();
+                        log.info("File {} deleted status {}", post.getFilePath(), res);
+                    }
+                } catch (Exception e) {
+                    log.error("Couldn't delete post file [{}].", post.getFilePath());
+                }
+            }
+            postDAO.delete(post);
+        }
     }
 
     //LIKE METHODS ENDED

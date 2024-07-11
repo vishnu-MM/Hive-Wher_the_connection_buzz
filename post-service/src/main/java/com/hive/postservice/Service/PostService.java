@@ -37,4 +37,6 @@ public interface PostService {
     void deleteLike(LikeRequestDTO likeId);
     Long likeCount(Long postId);
     Boolean isUserLiked(LikeRequestDTO likeDTO);
+
+    void deleteAllPostByUser(Long userId);
 }

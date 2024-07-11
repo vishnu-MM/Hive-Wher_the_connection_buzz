@@ -3,10 +3,13 @@ package com.hive.userservice.Service;
 import com.hive.userservice.DTO.*;
 import com.hive.userservice.Entity.*;
 import com.hive.userservice.Exception.*;
+import com.hive.userservice.FeignClientConfig.PostInterface;
 import com.hive.userservice.Repository.*;
 import com.hive.userservice.Utility.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,9 +28,13 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+    private static final Logger log = LoggerFactory.getLogger(UserServiceImpl.class);
     private final UserDAO userDao;
     private final ImageDAO imageDao;
+    private final ComplaintsDAO complaintsDAO;
+    private final UserConnectionDAO connectionDAO;
     private final RestTemplate restTemplate;
+    private final PostInterface postInterface;
 
     @Override
     public UserDTO findUserByUsername(String username) throws UserNotFoundException {
@@ -307,6 +314,33 @@ public class UserServiceImpl implements UserService {
             current = current.plusMonths(1);
         }
         return dateCountMap;
+    }
+
+    @Override
+    @Transactional
+    public void deleteAccount(Long userId) {
+        if (!existsUserById(userId)) {
+            return;
+        }
+        // Delete associated images
+        imageDao.deleteByUserId(userId);
+
+        // Delete associated complaints (sent and received)
+        complaintsDAO.deleteBySenderIdId(userId);
+        complaintsDAO.deleteByReportedUserId(userId);
+
+        // Delete associated user connections (both sides)
+        connectionDAO.deleteByUserId(userId);
+        connectionDAO.deleteByFriendId(userId);
+
+        try {
+            postInterface.deleteUserPosts(userId);
+        }catch (Exception e ) {
+            log.error(e.getMessage());
+        }
+
+        // Finally, delete the user
+        userDao.deleteById(userId);
     }
 
     private ImageDTO entityToDTO(Image image) {

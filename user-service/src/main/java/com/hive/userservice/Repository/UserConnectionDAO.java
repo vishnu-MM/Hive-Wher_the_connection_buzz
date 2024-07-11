@@ -23,4 +23,7 @@ public interface UserConnectionDAO extends JpaRepository<UserConnection, Long> {
 
     @Query("SELECT uc.friend FROM UserConnection uc WHERE uc.user.id = :userId and uc.status = :status ORDER BY uc.date ASC")
     List<User> findFriendsByUserIdAsc(@Param("userId") Long userId, @Param("status") ConnectionStatue status);
+
+    void deleteByUserId(Long userId);
+    void deleteByFriendId(Long userId);
 }

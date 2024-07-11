@@ -244,4 +244,10 @@ public class UserController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
+
+    @DeleteMapping("delete-account")
+    public ResponseEntity<Void> deleteAccount(@RequestParam("userId") Long userId) {
+        service.deleteAccount(userId);
+        return ResponseEntity.ok().build();
+    }
 }

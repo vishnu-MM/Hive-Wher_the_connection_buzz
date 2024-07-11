@@ -14,4 +14,8 @@ public interface LikeDAO extends JpaRepository<Like, Long> {
     List<Like> findByPost(Post post);
     Long countByPost(Post post);
     Optional<Like> findByPostAndUserId(Post post, Long userId);
+
+    void deleteByUserId(Long userId);
+
+    void deleteByPostId(Long id);
 }

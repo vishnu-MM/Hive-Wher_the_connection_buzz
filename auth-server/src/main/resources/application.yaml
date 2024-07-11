@@ -13,13 +13,26 @@ spring:
       ddl-auto: update
 
 # Mail Sender Config
+#  mail:
+#    properties:
+#      mail:
+#        host: smtp.office365.com
+#        password: irwsxabwaxaurnnj
+#        port: 587
+#        username: hive.team2024@outlook.com
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
+#          ssl:
+#            trust: "*"
   mail:
     properties:
       mail:
         host: smtp.office365.com
-        password: irwsxabwaxaurnnj
+        password: dqupxrsnvtoceluj
         port: 587
-        username: hive.team2024@outlook.com
+        username: gamefusioneommerce@outlook.com
         smtp:
           auth: true
           starttls:

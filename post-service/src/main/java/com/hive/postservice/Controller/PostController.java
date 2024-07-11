@@ -71,8 +71,10 @@ public class PostController {
     }
 
     @GetMapping("")
-    public ResponseEntity<PaginationInfo> getPostsForUser(@RequestParam("userId") Long userId){
-        return new ResponseEntity<>(service.getPostsForUser(userId, 0, 10), HttpStatus.OK);
+    public ResponseEntity<PaginationInfo> getPostsForUser(@RequestParam("userId") Long userId,
+                                                          @RequestParam("pageNo") Integer pageNo,
+                                                          @RequestParam("pageSize") Integer pageSize){
+        return new ResponseEntity<>(service.getPostsForUser(userId, pageNo, pageSize), HttpStatus.OK);
     }
 
     @GetMapping("random")
@@ -232,6 +234,12 @@ public class PostController {
         CommentDTO commentDTO = service.unBlockComment(commentId);
         if(commentDTO == null)
             return ResponseEntity.badRequest().build();
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("delete/by-user")
+    public ResponseEntity<Void> deleteUserPosts(@RequestBody Long userId) {
+        service.deleteAllPostByUser(userId);
         return ResponseEntity.ok().build();
     }
 }

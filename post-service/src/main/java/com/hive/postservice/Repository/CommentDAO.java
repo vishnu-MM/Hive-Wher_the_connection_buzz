@@ -11,4 +11,8 @@ import java.util.List;
 public interface CommentDAO extends JpaRepository<Comment, Long> {
     List<Comment> findByPost(Post post, Sort sort);
     Long countAllByPost(Post post);
+
+    void deleteByUserId(Long userId);
+
+    void deleteByPostId(Long id);
 }
