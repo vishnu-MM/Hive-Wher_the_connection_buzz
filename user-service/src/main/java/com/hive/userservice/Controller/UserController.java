@@ -5,6 +5,7 @@ import com.hive.userservice.Entity.User;
 import com.hive.userservice.Exception.InvalidUserDetailsException;
 import com.hive.userservice.Exception.UserNotFoundException;
 import com.hive.userservice.Service.ComplaintsService;
+import com.hive.userservice.Service.DeletedUserService;
 import com.hive.userservice.Service.UserConnectionService;
 import com.hive.userservice.Service.UserService;
 import com.hive.userservice.Utility.ImageType;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +32,7 @@ public class UserController {
     private final UserService service;
     private final ComplaintsService complaintsService;
     private final UserConnectionService connectionService;
+    public final DeletedUserService deletedUserService;
 
     @GetMapping("profile")
     public ResponseEntity<UserDTO> getMyProfile(@RequestHeader(name = "Authorization") String authorizationHeader) {
@@ -166,6 +169,26 @@ public class UserController {
     public ResponseEntity<ComplaintsPage> getAllComplaints(@RequestParam(defaultValue = "0") Integer pageNo,
                                                            @RequestParam(defaultValue = "10") Integer pageSize) {
         return ResponseEntity.ok(complaintsService.findAll(pageNo, pageSize));
+    }
+
+    @GetMapping("/deleted-user-count")
+    public ResponseEntity<Map<String, Integer>> getDeletedCount(@RequestParam("filterBy") String filterBy) {
+        try {
+            Map<String, Integer> response = deletedUserService.getGraphData(filterBy);
+            return ResponseEntity.ok(response);
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/user-count-by-type")
+    public ResponseEntity<Map<String, Long>> getCountByType() {
+        Map<String, Long> response = new HashMap<>(3);
+        response.put("ACTIVE_USER", service.getUserCountIsBlocked(false));
+        response.put("BLOCKED_USER", service.getUserCountIsBlocked(true));
+        response.put("DELETED_USER", deletedUserService.getDeletedUserCount());
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/user-count-date")

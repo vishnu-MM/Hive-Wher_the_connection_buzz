@@ -32,6 +32,8 @@ public interface UserService {
     Map<String, Integer> getUserCountByWeek(LocalDate startDate, LocalDate endDate);
     Map<String, Integer> getUserCountByYear(LocalDate startDate, LocalDate endDate);
     void deleteAccount(Long userId);
+    Long getUserCountIsBlocked(Boolean isBlocked);
+
     //* Image
     ImageDTO saveImage(MultipartFile file, ImageType imageType, String authHeader) throws UserNotFoundException, IOException;
     ImageDTO getImageByUserAndImageType(Long userId, ImageType imageType) throws UserNotFoundException;

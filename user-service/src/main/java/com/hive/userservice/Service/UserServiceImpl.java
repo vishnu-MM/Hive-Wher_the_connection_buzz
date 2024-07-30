@@ -35,6 +35,7 @@ public class UserServiceImpl implements UserService {
     private final UserConnectionDAO connectionDAO;
     private final RestTemplate restTemplate;
     private final PostInterface postInterface;
+    private final DeletedUserService deletedUserService;
 
     @Override
     public UserDTO findUserByUsername(String username) throws UserNotFoundException {
@@ -282,7 +283,6 @@ public class UserServiceImpl implements UserService {
             dateCountMap.put(
                     String.valueOf(current.getDayOfMonth()), userDao.countAllByJoinDate(Date.valueOf(current))
             );
-            System.out.println(String.valueOf(current.getDayOfMonth())+" " +dateCountMap.get(String.valueOf(current)));
             current = current.plusDays(1);
         }
         return dateCountMap;
@@ -296,7 +296,6 @@ public class UserServiceImpl implements UserService {
             dateCountMap.put(
                     String.valueOf(current.getDayOfWeek()), userDao.countAllByJoinDate(Date.valueOf(current))
             );
-            System.out.println(String.valueOf(current.getDayOfWeek())+" "+ String.valueOf(current)+" " +dateCountMap.get(String.valueOf(current)));
             current = current.plusDays(1);
         }
         return dateCountMap;
@@ -309,7 +308,7 @@ public class UserServiceImpl implements UserService {
         int year = current.getYear();
         while (current.isBefore(endDate) || current.isEqual(endDate)) {
             dateCountMap.put(
-                    String.valueOf(current.getMonth()), userDao.countAllByDateYearAndDateMonth(year,current.getMonthValue())
+                String.valueOf(current.getMonth()), userDao.countAllByDateYearAndDateMonth(year,current.getMonthValue())
             );
             current = current.plusMonths(1);
         }
@@ -319,9 +318,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteAccount(Long userId) {
-        if (!existsUserById(userId)) {
-            return;
-        }
+        Optional<User> userOptional = userDao.findById(userId);
+        if (userOptional.isEmpty()) { return; }
+
         // Delete associated images
         imageDao.deleteByUserId(userId);
 
@@ -333,14 +332,17 @@ public class UserServiceImpl implements UserService {
         connectionDAO.deleteByUserId(userId);
         connectionDAO.deleteByFriendId(userId);
 
-        try {
-            postInterface.deleteUserPosts(userId);
-        }catch (Exception e ) {
-            log.error(e.getMessage());
-        }
+        try { postInterface.deleteUserPosts(userId); }
+        catch (Exception e) { log.error(e.getMessage()); }
 
         // Finally, delete the user
         userDao.deleteById(userId);
+        deletedUserService.save(userOptional.get());
+    }
+
+    @Override
+    public Long getUserCountIsBlocked(Boolean isBlocked) {
+        return userDao.countAllByIsBlockedAndRole(isBlocked, Role.USER);
     }
 
     private ImageDTO entityToDTO(Image image) {

@@ -25,6 +25,7 @@ public interface UserDAO extends JpaRepository<User,Long> {
     Integer countAllByJoinDate(Date joinDate);
     @Query("SELECT COUNT(u) FROM User u where year(u.joinDate) = ?1 and month(u.joinDate) = ?2")
     Integer countAllByDateYearAndDateMonth(int year, int month);
+    Long countAllByIsBlockedAndRole(Boolean isBlocked, Role role);
 
     //When isBlocked is All and joinDate
     Page<User> findByRoleAndJoinDate(Role role, Date joinDate, Pageable pageable);
