@@ -71,7 +71,7 @@ public class AuthService {
         return dao.existsByUsername(username);
     }
 
-    public boolean validateToken(String token) {
+    public boolean validateToken(String token) throws UserBlockedException {
         String username = jwtService.extractUsername(token);
         Optional<User> userOptional = dao.findByUsername(username);
 
@@ -79,6 +79,9 @@ public class AuthService {
             throw new UsernameNotFoundException(username);
 
         User user = userOptional.get();
+        if (user.getIsBlocked())
+            throw new UserBlockedException("User with id"+ user.getId() + "id blocked");
+
         return jwtService.isTokenValid(token, user);
     }
 
